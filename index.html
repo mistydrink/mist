@@ -198,6 +198,12 @@ footer{position:relative;z-index:2;text-align:center;color:var(--faint);font-siz
 .bar i{display:block;height:100%;background:linear-gradient(90deg,#8b5cf6,#f0abfc)}
 #fx{position:fixed;inset:0;z-index:85;pointer-events:none;width:100%;height:100%}
 .comet{position:fixed;z-index:4;width:150px;height:40px;cursor:pointer;animation:fly 1.6s linear forwards}
+html.bh-only .menubar,html.bh-only .dock,html.bh-only #inside,html.bh-only footer,html.bh-only .hero,html.bh-only .hud,html.bh-only .hint,html.bh-only .flash{display:none!important}
+html.bh-only .comet{z-index:45}
+.bh-exit{position:fixed;top:16px;left:16px;z-index:70;display:none;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .4s}
+html.bh-only .bh-exit{display:inline-flex}
+.bh-exit.idle{opacity:0;pointer-events:none}
+html.bh-only.idle,html.bh-only.idle .stick{cursor:none}
 .comet::before{content:"";position:absolute;right:0;top:50%;width:150px;height:2px;transform:translateY(-50%);background:linear-gradient(90deg,transparent,#f0abfc 70%,#fff);border-radius:2px;filter:drop-shadow(0 0 6px #f0abfc)}
 @keyframes fly{from{transform:translate(0,0) rotate(18deg);opacity:0}10%{opacity:1}to{transform:translate(-70vw,24vw) rotate(18deg);opacity:0}}
 .astro{position:fixed;z-index:84;left:-140px;top:30vh;width:110px;cursor:pointer;animation:drift 16s linear forwards}
@@ -235,6 +241,7 @@ body.glow main{filter:drop-shadow(0 0 40px rgba(240,171,252,.5))}
   <div class="menu glass" id="umenu" role="menu">
     <button data-act="about" role="menuitem">About This Universe</button>
     <button data-act="eggs" role="menuitem">Easter Eggs… <kbd>?</kbd></button>
+    <button data-act="bhonly" role="menuitem">Just the Black Hole</button>
     <hr>
     <button data-act="bigbang" role="menuitem">Restart the Big Bang</button>
   </div>
@@ -477,6 +484,7 @@ body.glow main{filter:drop-shadow(0 0 40px rgba(240,171,252,.5))}
 
 <!-- ============ dock ============ -->
 <nav class="dock glass" id="dock" aria-label="Dock"></nav>
+<button class="bh-exit glass" id="bh-exit" type="button">← Back to the site</button>
 <div id="toasts" aria-live="polite"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
 
@@ -774,6 +782,7 @@ function tickIntro(now) {
 }
 function kick() { if (!introRaf) { lastT = performance.now(); introRaf = requestAnimationFrame(tickIntro); } }
 function push(amount) {
+  if (bhOnly) return;
   if (!introActive) return;
   if (amount < 0 && pT <= 0) { hint.classList.remove('nudge'); void hint.offsetWidth; hint.classList.add('nudge'); return; }
   pT = clamp(pT + amount); kick();
@@ -830,6 +839,42 @@ document.addEventListener('click', e => {
 document.addEventListener('visibilitychange', () => BH && BH.setRunning(introActive && !document.hidden));
 BH && BH.setRunning(true);
 render(0);
+
+
+/* =========================================================
+   "Just the Black Hole": full screen, no UI, every easter egg still on
+   ========================================================= */
+var bhOnly = false;
+const bhExit = $('#bh-exit');
+let bhIdle;
+function bhWake() {
+  if (!bhOnly) return;
+  bhExit.classList.remove('idle'); document.documentElement.classList.remove('idle');
+  clearTimeout(bhIdle);
+  bhIdle = setTimeout(() => { bhExit.classList.add('idle'); document.documentElement.classList.add('idle'); }, 2500);
+}
+function enterBlackHole() {
+  if (bhOnly) return;
+  bhOnly = true;
+  if (!introActive) restartIntro(true);
+  pT = pNow = 0; render(0);
+  document.documentElement.classList.add('bh-only');
+  if (location.hash !== '#blackhole') history.replaceState(null, '', '#blackhole');
+  bhWake();
+  toast('Just the Black Hole', 'All the easter eggs are still out there. Press Esc to go back.');
+}
+function exitBlackHole() {
+  if (!bhOnly) return;
+  bhOnly = false;
+  document.documentElement.classList.remove('bh-only', 'idle');
+  clearTimeout(bhIdle);
+  history.replaceState(null, '', location.pathname + location.search);
+}
+bhExit.addEventListener('click', exitBlackHole);
+['mousemove', 'touchstart', 'keydown'].forEach(ev => addEventListener(ev, bhWake, { passive: true }));
+addEventListener('keydown', e => { if (bhOnly && e.key === 'Escape' && !document.querySelector('.scrim')) exitBlackHole(); });
+addEventListener('hashchange', () => { location.hash === '#blackhole' ? enterBlackHole() : exitBlackHole(); });
+if (location.hash === '#blackhole') enterBlackHole();
 
 /* =========================================================
    rockets that fall in, and a rare Dyson swarm (1 in 20 visits)
@@ -1059,6 +1104,7 @@ umenu.addEventListener('click', e => {
   const act = e.target.closest('button')?.dataset.act;
   if (act === 'about') aboutUniverse();
   if (act === 'eggs') showEggs();
+  if (act === 'bhonly') enterBlackHole();
   if (act === 'bigbang') { scrollTo(0, 0); restartIntro(); toast('Big Bang restarted', 'Universe rebooting… estimated time: 13.8 billion years.'); }
 });
 function aboutUniverse() {
@@ -1274,7 +1320,7 @@ function doHawking() {
   toast('Hawking radiation detected', 'Black holes slowly evaporate. This one just lost a little weight.');
 }
 function comet() {
-  if (document.hidden || introVisible()) return;
+  if (document.hidden || (introVisible() && !bhOnly)) return;
   const c = document.createElement('div'); c.className = 'comet';
   c.style.left = (55 + Math.random() * 45) + 'vw'; c.style.top = (6 + Math.random() * 40) + 'vh';
   c.title = 'catch it!';
