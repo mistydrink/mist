@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="locked">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -61,8 +61,10 @@ button{font:inherit;color:inherit}
 .menu kbd{font-family:inherit;color:var(--faint)}
 
 /* ---------- intro ---------- */
-.intro{position:relative;height:330vh;z-index:2}
-.stick{position:sticky;top:0;height:100vh;overflow:hidden;background:#020008}
+.intro{position:fixed;inset:0;z-index:40}
+.intro.done{display:none}
+html.locked,html.locked body{overflow:hidden}
+.stick{position:absolute;inset:0;overflow:hidden;background:#020008}
 #bh{position:absolute;inset:0;width:100%;height:100%;display:block}
 .nogl .stick{background:radial-gradient(circle at 50% 50%,#000 0 11%,#e9d5ff 11.6%,#7c3aed 13%,#3b0d8a 22%,#140530 45%,#020008 70%)}
 .hero{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;width:min(92vw,900px);will-change:transform,opacity,filter}
@@ -71,15 +73,19 @@ button{font:inherit;color:inherit}
   filter:drop-shadow(0 4px 30px rgba(124,58,237,.65))}
 .hero p{margin:18px 0 0;font-size:clamp(15px,2vw,19px);color:var(--dim);text-shadow:0 2px 12px #000}
 .hero .roles span{color:var(--ink)}
-.hint{position:absolute;left:50%;bottom:104px;transform:translateX(-50%);font-size:clamp(18px,2.2vw,24px);font-weight:600;letter-spacing:-.01em;color:var(--ink);text-shadow:0 2px 16px rgba(124,58,237,.9);text-align:center;pointer-events:none;white-space:nowrap}
-.hint i{display:block;width:16px;height:16px;margin:12px auto 0;border-right:3px solid var(--violet);border-bottom:3px solid var(--violet);transform:rotate(45deg);animation:bob 1.6s infinite}
-@keyframes bob{50%{transform:translateY(6px) rotate(45deg)}}
+.hint{position:absolute;left:50%;bottom:104px;transform:translateX(-50%);font-size:clamp(18px,2.2vw,24px);font-weight:600;letter-spacing:-.01em;color:var(--ink);text-shadow:0 2px 16px rgba(124,58,237,.9);text-align:center;white-space:nowrap;background:none;border:0;padding:8px 14px;cursor:pointer;font-family:inherit;border-radius:12px}
+.hint:hover{color:#fff}
+.hint.nudge{animation:nudge .5s}
+@keyframes nudge{30%{transform:translate(-50%,-10px)}60%{transform:translate(-50%,3px)}}
+.hint i{display:block;width:16px;height:16px;margin:0 auto 12px;border-right:3px solid var(--violet);border-bottom:3px solid var(--violet);transform:rotate(225deg);animation:bob 1.6s infinite}
+.hint small{display:block;margin-top:8px;font-size:13px;font-weight:500;color:var(--dim);text-shadow:none}
+@keyframes bob{50%{transform:translateY(-6px) rotate(225deg)}}
 .hud{position:absolute;left:20px;bottom:96px;padding:12px 14px;border-radius:14px;font:12px/1.7 var(--mono);color:var(--dim);min-width:230px}
 .hud b{float:right;color:var(--ink);font-weight:500;margin-left:16px;font-variant-numeric:tabular-nums}
 .flash{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle,#fff 0,#e9d5ff 20%,#7c3aed 55%,transparent 80%)}
 
 /* ---------- content ---------- */
-main{position:relative;z-index:2;max-width:1160px;margin:0 auto;padding:40px max(4vw,16px) 160px;display:grid;gap:56px}
+main{position:relative;z-index:2;max-width:1160px;margin:0 auto;padding:72px max(4vw,16px) 160px;display:grid;gap:56px}
 .win{border-radius:16px;overflow:hidden;transition:max-width .4s}
 .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
 .reveal.in{opacity:1;transform:none}
@@ -257,7 +263,7 @@ body.glow main{filter:drop-shadow(0 0 40px rgba(240,171,252,.5))}
       <div>time dilation <b id="h-t">1.06×</b></div>
       <div>status <b id="h-s">stable orbit</b></div>
     </div>
-    <div class="hint" id="hint">scroll to fall in<i></i></div>
+    <button class="hint" id="hint" type="button"><i></i><span id="hint-t">scroll forward to fall in</span><small>or click here</small></button>
     <div class="flash" id="flash"></div>
   </div>
 </section>
@@ -443,7 +449,7 @@ const EGGS = [
   ['ping', 'Interplanetary ping', 'ping something far away'],
   ['answer', 'The answer', 'type the answer to everything'],
   ['poke', "Don't poke the void", 'click the black hole itself'],
-  ['escape', 'Impossible escape', 'go back the way you came'],
+  ['escape', 'Impossible escape', 'restart the universe after you fall in'],
   ['idle', 'Lost in space', 'go quiet for a while'],
 ];
 let found = {};
@@ -638,15 +644,15 @@ const BH = (() => {
 })();
 
 /* =========================================================
-   intro scroll: fall into the hole
+   intro: roll the wheel forward to fall into the hole
    ========================================================= */
 const intro = $('#intro'), stick = $('#stick'), hero = $('#hero'), hint = $('#hint'), flash = $('#flash');
 const hD = $('#h-d'), hT = $('#h-t'), hS = $('#h-s');
-let reachedInside = false, introVisible = true, scrollQueued = false;
-function updateIntro() {
-  scrollQueued = false;
-  const r = intro.getBoundingClientRect();
-  const p = clamp(-r.top / (r.height - innerHeight));
+const touchUI = matchMedia('(pointer: coarse)').matches;
+if (touchUI) $('#hint-t').textContent = 'swipe down to fall in';
+let reachedInside = false, introActive = true, pT = 0, pNow = 0, introRaf = 0, lastT = 0, autoFall = false;
+const introVisible = () => introActive;
+function render(p) {
   const e = ease(p), fall = Math.pow(p, 1.5);
   if (BH) BH.st.p = p;
   const sx = Math.max(.02, 1 - e * 1.05), sy = Math.max(.02, 1 - e * .7);
@@ -654,6 +660,7 @@ function updateIntro() {
   hero.style.opacity = clamp(1 - p * 1.7).toFixed(3);
   hero.style.filter = p > .01 ? `blur(${(p * 9).toFixed(1)}px)` : 'none';
   hint.style.opacity = clamp(1 - p * 6).toFixed(3);
+  hint.style.pointerEvents = p > .1 ? 'none' : 'auto';
   const rs = 1 + (1 - fall) * 8.5;
   hD.textContent = rs.toFixed(2) + ' rₛ';
   hT.textContent = p > .985 ? '∞' : (1 / Math.sqrt(1 - 1 / Math.max(rs, 1.0001))).toFixed(2) + '×';
@@ -661,13 +668,75 @@ function updateIntro() {
   flash.style.opacity = (clamp(1 - Math.abs(p - .95) / .05) * .8).toFixed(3);
   stick.style.opacity = (p < .93 ? 1 : clamp(1 - (p - .93) / .07)).toFixed(3);
   $('#hud').style.opacity = clamp(1 - (p - .8) / .1).toFixed(3);
-  if (p > .995) reachedInside = true;
-  if (reachedInside && p < .03) award('escape') && toast('Wait, what?', 'Nothing escapes a black hole. Except you, apparently.');
 }
-addEventListener('scroll', () => { if (!scrollQueued) { scrollQueued = true; requestAnimationFrame(updateIntro); } }, { passive: true });
-new IntersectionObserver(([en]) => { introVisible = en.isIntersecting; BH && BH.setRunning(introVisible && !document.hidden); }).observe(intro);
-document.addEventListener('visibilitychange', () => BH && BH.setRunning(introVisible && !document.hidden));
-updateIntro();
+function tickIntro(now) {
+  introRaf = 0;
+  if (!introActive) return;
+  const dt = Math.min(.05, (now - lastT) / 1000 || .016); lastT = now;
+  if (autoFall) pT = Math.min(1, pT + dt / (reduce ? .6 : 2.4));
+  pNow += (pT - pNow) * Math.min(1, dt * (reduce ? 20 : 6));
+  if (Math.abs(pT - pNow) < .0005) pNow = pT;
+  render(pNow);
+  if (pNow >= .995) { finishIntro(); return; }
+  if (pNow !== pT || autoFall) introRaf = requestAnimationFrame(tickIntro);
+}
+function kick() { if (!introRaf) { lastT = performance.now(); introRaf = requestAnimationFrame(tickIntro); } }
+function push(amount) {
+  if (!introActive) return;
+  if (amount < 0 && pT <= 0) { hint.classList.remove('nudge'); void hint.offsetWidth; hint.classList.add('nudge'); return; }
+  pT = clamp(pT + amount); kick();
+}
+function finishIntro() {
+  introActive = false; autoFall = false; reachedInside = true;
+  pT = pNow = 1; render(1);
+  intro.classList.add('done');
+  document.documentElement.classList.remove('locked');
+  BH && BH.setRunning(false);
+  scrollTo(0, 0);
+}
+function restartIntro() {
+  const escaped = reachedInside;
+  introActive = true; autoFall = false; pT = pNow = 0;
+  intro.classList.remove('done');
+  document.documentElement.classList.add('locked');
+  render(0);
+  BH && BH.setRunning(!document.hidden);
+  if (escaped) award('escape') && toast('Wait, what?', 'Nothing escapes a black hole. Except you, apparently.');
+}
+// wheel forward (away from you) = deltaY < 0 = fall in; backward eases you back out
+addEventListener('wheel', e => {
+  if (!introActive) return;
+  e.preventDefault();
+  const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * innerHeight : e.deltaY;
+  push(-dy / 1400);
+}, { passive: false });
+// touch: dragging your finger down pulls you in (the same direction as rolling the wheel forward)
+let ty = null;
+addEventListener('touchstart', e => { if (introActive) ty = e.touches[0].clientY; }, { passive: true });
+addEventListener('touchmove', e => {
+  if (!introActive || ty === null) return;
+  e.preventDefault();
+  const y = e.touches[0].clientY; push((y - ty) / (innerHeight * 1.6)); ty = y;
+}, { passive: false });
+addEventListener('touchend', () => { ty = null; }, { passive: true });
+addEventListener('keydown', e => {
+  if (!introActive || (e.target.closest && e.target.closest('input,textarea'))) return;
+  if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); push(.09); }
+  if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); push(-.09); }
+});
+hint.addEventListener('click', e => { e.stopPropagation(); autoFall = true; kick(); });
+// menu and dock links jump straight inside
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('a[href^="#"]');
+  if (!a || !introActive) return;
+  const target = document.querySelector(a.getAttribute('href'));
+  if (!target || intro.contains(target)) return;
+  e.preventDefault(); finishIntro();
+  requestAnimationFrame(() => target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }));
+});
+document.addEventListener('visibilitychange', () => BH && BH.setRunning(introActive && !document.hidden));
+BH && BH.setRunning(true);
+render(0);
 
 // mouse parallax + poking the void
 let pokes = 0;
@@ -738,7 +807,7 @@ umenu.addEventListener('click', e => {
   const act = e.target.closest('button')?.dataset.act;
   if (act === 'about') aboutUniverse();
   if (act === 'eggs') showEggs();
-  if (act === 'bigbang') { reachedInside = false; scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); toast('Big Bang restarted', 'Universe rebooting… estimated time: 13.8 billion years.'); }
+  if (act === 'bigbang') { scrollTo(0, 0); restartIntro(); toast('Big Bang restarted', 'Universe rebooting… estimated time: 13.8 billion years.'); }
 });
 function aboutUniverse() {
   dialog(`<svg width="84" height="84" viewBox="0 0 84 84"><defs><radialGradient id="au"><stop offset=".48" stop-color="#000"/><stop offset=".53" stop-color="#f5d0fe"/><stop offset=".62" stop-color="#8b5cf6"/><stop offset="1" stop-color="#2e1065" stop-opacity="0"/></radialGradient></defs><circle cx="42" cy="42" r="42" fill="url(#au)"/></svg>
@@ -941,12 +1010,12 @@ function warp() {
 }
 function doHawking() {
   award('hawking');
-  if (BH && introVisible) BH.hawking();
+  if (BH && introVisible()) BH.hawking();
   document.body.classList.add('glow'); setTimeout(() => document.body.classList.remove('glow'), 1800);
   toast('Hawking radiation detected', 'Black holes slowly evaporate. This one just lost a little weight.');
 }
 function comet() {
-  if (document.hidden || introVisible) return;
+  if (document.hidden || introVisible()) return;
   const c = document.createElement('div'); c.className = 'comet';
   c.style.left = (55 + Math.random() * 45) + 'vw'; c.style.top = (6 + Math.random() * 40) + 'vh';
   c.title = 'catch it!';
