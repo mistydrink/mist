@@ -207,18 +207,6 @@ html.bh-only .comet{z-index:45}
 html.bh-only .bh-exit{display:inline-flex}
 .bh-exit.idle{opacity:0;pointer-events:none}
 html.bh-only.idle,html.bh-only.idle .stick{cursor:none}
-.music{position:fixed;left:16px;bottom:16px;z-index:60;width:min(380px,calc(100vw - 32px));padding:12px;border-radius:18px;display:none;transition:opacity .4s}
-html.music-on .music{display:block}
-html.idle .music:not(:hover){opacity:.35}
-.music-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 2px 10px}
-.music-head b{display:flex;align-items:center;gap:8px;font-size:14px}
-.music-head small{display:block;font-size:12px;color:var(--dim);margin-top:2px}
-.music-head button{flex:none;min-height:40px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.08);font-size:13px;font-weight:600;cursor:pointer}
-.music-head button:hover{background:rgba(255,255,255,.16)}
-#mu-embed{border-radius:12px;overflow:hidden;min-height:152px;background:rgba(0,0,0,.25)}
-#mu-embed iframe{display:block;border:0;width:100%}
-.music-note{margin:8px 2px 0;font-size:11.5px;color:var(--faint);line-height:1.45}
-.mb-music svg{transition:transform .2s}.mb-music:hover svg{transform:scale(1.12)}
 .comet::before{content:"";position:absolute;right:0;top:50%;width:150px;height:2px;transform:translateY(-50%);background:linear-gradient(90deg,transparent,#f0abfc 70%,#fff);border-radius:2px;filter:drop-shadow(0 0 6px #f0abfc)}
 @keyframes fly{from{transform:translate(0,0) rotate(18deg);opacity:0}10%{opacity:1}to{transform:translate(-70vw,24vw) rotate(18deg);opacity:0}}
 .astro{position:fixed;z-index:84;left:-140px;top:30vh;width:110px;cursor:pointer;animation:drift 16s linear forwards}
@@ -257,7 +245,6 @@ body.glow main{filter:drop-shadow(0 0 40px rgba(240,171,252,.5))}
 
 <!-- ============ menu bar ============ -->
 <header class="menubar" id="top">
-  <button class="mb-btn mb-ico mb-music" id="music-btn" type="button" aria-label="Play my Spotify playlist in the black hole" title="Play my playlist in the black hole"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#1ED760"/><path d="M6.2 9.3c3.9-1.2 8.3-.8 11.7 1.2M6.8 12.6c3.2-.9 6.8-.6 9.6 1M7.4 15.7c2.6-.7 5.3-.4 7.5.9" fill="none" stroke="#121212" stroke-width="1.8" stroke-linecap="round"/></svg></button>
   <button class="mb-btn mb-logo" id="logo" aria-label="Universe menu" aria-expanded="false">
     <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0abfc"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><circle cx="12" cy="12" r="6.2" fill="url(#lg)"/><ellipse cx="12" cy="12" rx="11" ry="3.6" fill="none" stroke="#e9d5ff" stroke-width="1.6" transform="rotate(-24 12 12)"/></svg>
   </button>
@@ -476,7 +463,7 @@ body.glow main{filter:drop-shadow(0 0 40px rgba(240,171,252,.5))}
       </div>
       <div class="proj" style="margin-top:56px;padding-top:48px;border-top:1px solid var(--line)">
         <div class="mock" style="position:relative">
-          <svg viewBox="0 0 460 300" role="img" aria-label="Mockup of the Nebula music player for macOS" font-family="Inter,system-ui,sans-serif">
+          <svg viewBox="0 0 460 300" role="img" aria-label="Illustration of the Nebula music player" font-family="Inter,system-ui,sans-serif">
 <defs><linearGradient id="np-art" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0abfc"/><stop offset=".55" stop-color="#7c3aed"/><stop offset="1" stop-color="#1e1b4b"/></linearGradient>
 <radialGradient id="np-bg" cx=".75" cy=".2" r=".9"><stop offset="0" stop-color="#3b1a6e"/><stop offset="1" stop-color="#0b0618"/></radialGradient></defs>
 <rect width="460" height="300" rx="12" fill="url(#np-bg)"/>
@@ -493,16 +480,15 @@ body.glow main{filter:drop-shadow(0 0 40px rgba(240,171,252,.5))}
 <path d="M286 182l12 8-12 8z"/><rect x="299" y="182" width="3" height="16"/></g>
 <text x="60" y="230" font-size="10" fill="rgba(237,233,254,.6)">THEMES</text>
 <circle cx="116" cy="227" r="8" fill="#7c3aed" stroke="#fff" stroke-width="2"/><circle cx="138" cy="227" r="8" fill="#0ea5e9"/><circle cx="160" cy="227" r="8" fill="#f43f5e"/><circle cx="182" cy="227" r="8" fill="#10b981"/><circle cx="204" cy="227" r="8" fill="#e5e7eb"/>
-<text x="398" y="230" font-size="10" text-anchor="end" fill="rgba(237,233,254,.6)">Rust · native macOS</text>
+<text x="398" y="230" font-size="10" text-anchor="end" fill="rgba(237,233,254,.6)">Rust · macOS + Windows</text>
 </svg>
-          <span class="lockbadge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Private</span>
-          <p class="small" style="margin:10px 0 0">Mockup only. The desktop app is still being built.</p>
+          <p class="small" style="margin:10px 0 0">Illustration. Real screenshots are on GitHub.</p>
         </div>
         <div>
           <h3>Nebula Player</h3>
-          <p class="lead">A tiny native music player for macOS written in Rust, with a purple glass design and several themes. It plays your Spotify or SoundCloud playlists through their official players, so it stays lightweight. You can try the black hole version on this site right now.</p>
-          <div class="chips"><span class="chip">Rust</span><span class="chip">macOS</span><span class="chip">Spotify</span><span class="chip">SoundCloud</span><span class="chip">In development</span></div>
-          <div class="btns"><a class="btn pri" href="#music">Play my playlist in the black hole</a><span class="btn" style="cursor:default;opacity:.75" aria-disabled="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Private · coming soon</span></div>
+          <p class="lead">A tiny music player written in Rust for macOS and Windows, with a macOS-style purple glass window, six themes and a mini player. Paste a Spotify playlist link and it plays through your Spotify app, so it stays light: about a 7 MB download, with no browser engine inside.</p>
+          <div class="chips"><span class="chip">Rust</span><span class="chip">egui</span><span class="chip">macOS</span><span class="chip">Windows</span><span class="chip">Spotify API</span></div>
+          <div class="btns"><a class="btn pri" href="https://github.com/mistydrink/nebula" target="_blank" rel="noopener"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>View on GitHub</a></div>
         </div>
       </div>
       <a class="more" href="https://github.com/mistydrink" target="_blank" rel="noopener"><span>More experiments on github.com/mistydrink</span><span>↗</span></a>
@@ -584,14 +570,6 @@ body.glow main{filter:drop-shadow(0 0 40px rgba(240,171,252,.5))}
 <!-- ============ dock ============ -->
 <nav class="dock glass" id="dock" aria-label="Dock"></nav>
 <button class="bh-exit glass" id="bh-exit" type="button">← Back to the site</button>
-<section class="music glass" id="mu-panel" aria-label="Music player">
-  <div class="music-head">
-    <div><b><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#1ED760"/><path d="M6.2 9.3c3.9-1.2 8.3-.8 11.7 1.2M6.8 12.6c3.2-.9 6.8-.6 9.6 1M7.4 15.7c2.6-.7 5.3-.4 7.5.9" fill="none" stroke="#121212" stroke-width="1.8" stroke-linecap="round"/></svg>Now playing in the black hole</b><small id="mu-status">Press play below</small></div>
-    <button type="button" id="mu-tap" title="Tap a few times in time with the music. Keyboard: T">Tap the beat</button>
-  </div>
-  <div id="mu-embed"></div>
-  <p class="music-note">Plays through Spotify's own player. Log in to Spotify in this browser for full songs; otherwise Spotify plays 30-second previews.</p>
-</section>
 <div id="toasts" aria-live="polite"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
 
@@ -800,7 +778,7 @@ const BH = (() => {
     // adaptive resolution: drop render scale if the GPU struggles
     ftSum += dt; if (++frames === 45) { if (ftSum / 45 > .024 && quality > .5) { quality -= .2; resize(); } frames = 0; ftSum = 0; }
     const p = st.p, e = ease(p), fall = Math.pow(p, 1.5);
-    const speed = (reduce ? .25 : 1) * (1 + p * 3.5 + st.boost * 6 + (st.music || 0) * .9);
+    const speed = (reduce ? .25 : 1) * (1 + p * 3.5 + st.boost * 6);
     t += dt * speed;
     st.boost *= Math.exp(-dt * 1.2);
     st.pulse *= Math.exp(-dt * 3);
@@ -829,7 +807,7 @@ const BH = (() => {
     gl.uniform2f(Q.u.uRes, cw, ch);
     gl.uniform2f(Q.u.uC, cw * .5 * (1 + st.ox), ch * .5 * (1 + st.oy));
     gl.uniform1f(Q.u.uR, RH * (1.6 / D) * m / 2 * (1 - hawk * .3));
-    gl.uniform1f(Q.u.uT, t); gl.uniform1f(Q.u.uPulse, st.pulse + (st.music || 0) * .22); gl.uniform1f(Q.u.uWave, st.wave);
+    gl.uniform1f(Q.u.uT, t); gl.uniform1f(Q.u.uPulse, st.pulse); gl.uniform1f(Q.u.uWave, st.wave);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 
     raf = requestAnimationFrame(frame);
@@ -982,23 +960,20 @@ function bhWake() {
   clearTimeout(bhIdle);
   bhIdle = setTimeout(() => { bhExit.classList.add('idle'); document.documentElement.classList.add('idle'); }, 2500);
 }
-function enterBlackHole(withMusic) {
-  if (withMusic) Music.open();
-  if (bhOnly) { if (withMusic && location.hash !== '#music') history.replaceState(null, '', '#music'); return; }
+function enterBlackHole() {
+  if (bhOnly) return;
   bhOnly = true;
   if (!introActive) restartIntro(true);
   pT = pNow = 0; render(0);
   document.documentElement.classList.add('bh-only');
   placeHole();
-  const want = withMusic ? '#music' : '#blackhole';
-  if (location.hash !== want) history.replaceState(null, '', want);
+  if (location.hash !== '#blackhole') history.replaceState(null, '', '#blackhole');
   bhWake();
-  toast(withMusic ? 'Playlist mode' : 'Just the Black Hole', withMusic ? 'Press play. The black hole spins up with the music, and tapping the beat syncs its pulse. Esc to go back.' : 'All the easter eggs are still out there. Press Esc to go back.');
+  toast('Just the Black Hole', 'All the easter eggs are still out there. Press Esc to go back.');
 }
 function exitBlackHole() {
   if (!bhOnly) return;
   bhOnly = false;
-  Music.close();
   document.documentElement.classList.remove('bh-only', 'idle');
   placeHole();
   clearTimeout(bhIdle);
@@ -1007,88 +982,8 @@ function exitBlackHole() {
 bhExit.addEventListener('click', exitBlackHole);
 ['mousemove', 'touchstart', 'keydown'].forEach(ev => addEventListener(ev, bhWake, { passive: true }));
 addEventListener('keydown', e => { if (bhOnly && e.key === 'Escape' && !document.querySelector('.scrim')) exitBlackHole(); });
-addEventListener('hashchange', () => { location.hash === '#blackhole' ? enterBlackHole() : location.hash === '#music' ? enterBlackHole(true) : exitBlackHole(); });
-$('#music-btn').addEventListener('click', e => { e.stopPropagation(); enterBlackHole(true); });
-
-
-/* =========================================================
-   music: my Spotify playlist through Spotify's official embed.
-   Spotify's player is a sealed iframe, so the page can't hear the audio.
-   The black hole reacts to play/pause and track changes,
-   and "Tap the beat" locks its pulse to the song's tempo.
-   ========================================================= */
-const Music = (() => {
-  const ID = '114jpRMa8PE0zGp2FvXDQ8', URI = 'spotify:playlist:' + ID;
-  const status = $('#mu-status'), tapBtn = $('#mu-tap'), box = $('#mu-embed');
-  let ctrl = null, started = false, playing = false, lastUri = '', taps = [], period = 0, nextBeat = 0, raf = 0;
-  const say = () => { status.textContent = !playing ? (ctrl ? 'Paused' : 'Press play below') : period ? `${Math.round(60 / period)} BPM · pulse synced` : 'Playing · tap the beat to sync the pulse'; };
-  function plainEmbed() {
-    if (ctrl || box.querySelector('iframe')) return;
-    box.innerHTML = `<iframe title="Spotify playlist" src="https://open.spotify.com/embed/playlist/${ID}?theme=0" height="152" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
-    playing = true; if (BH) BH.st.music = 1; status.textContent = 'Press play below · tap the beat to sync the pulse';
-  }
-  function load() {
-    if (started) return; started = true;
-    const slot = document.createElement('div'); box.append(slot);
-    window.onSpotifyIframeApiReady = api => {
-      api.createController(slot, { uri: URI, width: '100%', height: 152, theme: 'dark' }, c => {
-        ctrl = c;
-        c.addListener('playback_update', e => {
-          const was = playing; playing = !e.data.isPaused;
-          if (BH) BH.st.music = playing ? 1 : 0;
-          if (playing && !was) beat(); say();
-        });
-        c.addListener('playback_started', e => {
-          const u = e.data && e.data.playingURI;
-          if (u && u !== lastUri) { lastUri = u; if (BH) { BH.st.wave = .001; BH.st.pulse = 1.3; } }
-        });
-      });
-    };
-    const sc = document.createElement('script');
-    sc.src = 'https://open.spotify.com/embed/iframe-api/v1'; sc.async = true; sc.onerror = plainEmbed;
-    document.body.append(sc);
-    setTimeout(() => { if (!ctrl) { slot.remove(); plainEmbed(); } }, 7000);
-  }
-  function beat() {
-    if (raf) return;
-    const loop = () => {
-      raf = 0;
-      if (!period || !playing || !document.documentElement.classList.contains('music-on')) return;
-      const now = performance.now() / 1000;
-      if (now >= nextBeat) { if (BH) BH.st.pulse = Math.max(BH.st.pulse, .95); do nextBeat += period; while (nextBeat < now); }
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-  }
-  function tap() {
-    const now = performance.now();
-    taps = taps.filter(x => now - x < 2500); taps.push(now);
-    if (BH) BH.st.pulse = Math.max(BH.st.pulse, 1);
-    if (taps.length >= 3) {
-      let sum = 0; for (let i = 1; i < taps.length; i++) sum += taps[i] - taps[i - 1];
-      const avg = sum / (taps.length - 1) / 1000;
-      if (avg > .25 && avg < 2) { period = avg; nextBeat = now / 1000 + period; beat(); }
-    }
-    tapBtn.textContent = taps.length >= 3 && period ? `${Math.round(60 / period)} BPM` : 'Tap the beat';
-    say();
-  }
-  tapBtn.addEventListener('click', e => { e.stopPropagation(); tap(); });
-  addEventListener('keydown', e => {
-    if (!document.documentElement.classList.contains('music-on') || (e.target.closest && e.target.closest('input,textarea'))) return;
-    if (e.key === 't' || e.key === 'T') tap();
-  });
-  $('#mu-panel').addEventListener('click', e => e.stopPropagation());
-  return {
-    open() { document.documentElement.classList.add('music-on'); load(); say(); },
-    close() {
-      document.documentElement.classList.remove('music-on');
-      if (ctrl) { try { ctrl.pause(); } catch (e) {} }
-      playing = false; if (BH) BH.st.music = 0;
-    },
-  };
-})();
+addEventListener('hashchange', () => { location.hash === '#blackhole' ? enterBlackHole() : exitBlackHole(); });
 if (location.hash === '#blackhole') enterBlackHole();
-if (location.hash === '#music') enterBlackHole(true);
 
 /* =========================================================
    rockets that fall in, and a rare Dyson swarm (1 in 20 visits)
