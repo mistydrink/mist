@@ -71,8 +71,8 @@ button{font:inherit;color:inherit}
   filter:drop-shadow(0 4px 30px rgba(124,58,237,.65))}
 .hero p{margin:18px 0 0;font-size:clamp(15px,2vw,19px);color:var(--dim);text-shadow:0 2px 12px #000}
 .hero .roles span{color:var(--ink)}
-.hint{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);font-size:13px;color:var(--dim);text-align:center;pointer-events:none}
-.hint i{display:block;width:10px;height:10px;margin:8px auto 0;border-right:2px solid var(--violet);border-bottom:2px solid var(--violet);transform:rotate(45deg);animation:bob 1.6s infinite}
+.hint{position:absolute;left:50%;bottom:104px;transform:translateX(-50%);font-size:clamp(18px,2.2vw,24px);font-weight:600;letter-spacing:-.01em;color:var(--ink);text-shadow:0 2px 16px rgba(124,58,237,.9);text-align:center;pointer-events:none;white-space:nowrap}
+.hint i{display:block;width:16px;height:16px;margin:12px auto 0;border-right:3px solid var(--violet);border-bottom:3px solid var(--violet);transform:rotate(45deg);animation:bob 1.6s infinite}
 @keyframes bob{50%{transform:translateY(6px) rotate(45deg)}}
 .hud{position:absolute;left:20px;bottom:96px;padding:12px 14px;border-radius:14px;font:12px/1.7 var(--mono);color:var(--dim);min-width:230px}
 .hud b{float:right;color:var(--ink);font-weight:500;margin-left:16px;font-variant-numeric:tabular-nums}
@@ -203,7 +203,7 @@ body.glow main{filter:drop-shadow(0 0 40px rgba(240,171,252,.5))}
   .mb-link,.mb-wifi{display:none}
   .card{flex-direction:column;align-items:flex-start;padding:26px 22px}
   .hud{left:12px;right:12px;bottom:88px;min-width:0}
-  .hint{bottom:200px}
+  .hint{bottom:210px}
   .dock{gap:3px;padding:6px}
   .dock a,.dock button{width:calc(40px * var(--s));height:calc(40px * var(--s))}
   .dock .sep{margin:3px 1px}
@@ -363,7 +363,7 @@ body.glow main{filter:drop-shadow(0 0 40px rgba(240,171,252,.5))}
       <h2>Contact</h2>
       <p class="lead" style="margin-bottom:24px">Got a project, a mod idea or a job? Send a transmission.</p>
       <form class="mail" id="mail">
-        <label>To: <span class="to-chip">potatoe20023@gmail.com</span></label>
+        <label>To: <span class="to-chip">mistydrinkm@gmail.com</span></label>
         <label for="m-sub">Subject: <input id="m-sub" name="subject" placeholder="Hello from Earth"></label>
         <textarea id="m-body" name="body" aria-label="Message" placeholder="Write your message…"></textarea>
       </form>
@@ -372,7 +372,7 @@ body.glow main{filter:drop-shadow(0 0 40px rgba(240,171,252,.5))}
         <button class="btn" id="copy" type="button">Copy email</button>
         <a class="btn" href="https://github.com/mistydrink" target="_blank" rel="noopener">GitHub ↗</a>
       </div>
-      <p class="small">Or email directly: potatoe20023@gmail.com</p>
+      <p class="small">Or email directly: mistydrinkm@gmail.com</p>
     </div>
   </article>
 </main>
@@ -831,8 +831,8 @@ const CMDS = {
   'ls .secrets': () => 'ls: .secrets: permission denied (it is past the event horizon)',
   stack: () => STACK.map(s => s[0]).join(' · '),
   projects: () => 'open-review  →  https://mistydrink.github.io/open-review/',
-  contact: () => 'potatoe20023@gmail.com',
-  'cat contact.txt': () => 'potatoe20023@gmail.com',
+  contact: () => 'mistydrinkm@gmail.com',
+  'cat contact.txt': () => 'mistydrinkm@gmail.com',
   github: () => 'https://github.com/mistydrink',
   date: () => new Date().toString() + '\n' + marsTime(),
   exit: () => 'there is no exit. you are inside a black hole.',
@@ -869,7 +869,7 @@ out('type "help" to see what this terminal can do.');
 /* =========================================================
    contact
    ========================================================= */
-const EMAIL = 'potatoe20023@gmail.com';
+const EMAIL = 'mistydrinkm@gmail.com';
 $('#send').addEventListener('click', () => {
   const sub = $('#m-sub').value.trim() || 'Hello from Earth';
   const body = $('#m-body').value;
