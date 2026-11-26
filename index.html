@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mistydrink · portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  VOICE   playful, space-nerd, confident
+  IDEA    a purple macOS desktop that lives inside a black hole
+  PICTURE WebGL particle black hole you scroll into; glass windows after the horizon
+  COLOUR  near-black violet space, lavender glass, pink + violet glow accents
+  TYPE    Inter (system SF on Apple) for UI, IBM Plex Mono for the terminal
+*/
+:root{
+  --bg:#05020c; --ink:#f5f3ff; --dim:rgba(237,233,254,.64); --faint:rgba(237,233,254,.38);
+  --violet:#a78bfa; --purple:#7c3aed; --pink:#f0abfc; --line:rgba(255,255,255,.13);
+  --glass:linear-gradient(180deg,rgba(168,139,250,.16),rgba(88,50,170,.10));
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",system-ui,sans-serif;
+  --mono:"SF Mono","IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:60px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--sans);overflow-x:clip;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--pink);outline-offset:2px;border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- glass ---------- */
+.glass{
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);
+  border:1px solid var(--line);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 24px 70px rgba(10,0,30,.55);
+}
+
+/* ---------- static sky behind the content ---------- */
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+
+/* ---------- menu bar ---------- */
+.menubar{position:fixed;top:0;left:0;right:0;height:30px;z-index:60;display:flex;align-items:center;gap:4px;padding:0 10px;
+  font-size:13px;background:rgba(24,10,48,.42);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);
+  border-bottom:1px solid rgba(255,255,255,.08)}
+.mb-btn{background:none;border:0;padding:3px 9px;border-radius:6px;cursor:default;text-decoration:none;white-space:nowrap}
+.mb-btn:hover,.mb-btn[aria-expanded=true]{background:rgba(255,255,255,.14)}
+.mb-logo{display:grid;place-items:center;width:30px;height:24px;padding:0}
+.mb-logo svg{transition:transform .6s}
+.mb-logo.spin svg{transform:rotate(720deg)}
+.mb-name{font-weight:700}
+.mb-right{margin-left:auto;display:flex;align-items:center;gap:2px}
+.mb-ico{display:grid;place-items:center;height:24px;padding:0 7px}
+.menu{position:absolute;top:28px;left:8px;min-width:240px;padding:5px;border-radius:10px;display:none;z-index:70}
+.menu.open{display:block}
+.menu button{display:flex;justify-content:space-between;width:100%;text-align:left;background:none;border:0;padding:5px 10px;border-radius:6px;font-size:13px;cursor:default}
+.menu button:hover{background:var(--purple)}
+.menu hr{border:0;border-top:1px solid var(--line);margin:5px 8px}
+.menu kbd{font-family:inherit;color:var(--faint)}
+
+/* ---------- intro ---------- */
+.intro{position:relative;height:330vh;z-index:2}
+.stick{position:sticky;top:0;height:100vh;overflow:hidden;background:#020008}
+#bh{position:absolute;inset:0;width:100%;height:100%;display:block}
+.nogl .stick{background:radial-gradient(circle at 50% 50%,#000 0 11%,#e9d5ff 11.6%,#7c3aed 13%,#3b0d8a 22%,#140530 45%,#020008 70%)}
+.hero{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;width:min(92vw,900px);will-change:transform,opacity,filter}
+.hero h1{margin:0;font-size:clamp(46px,9vw,112px);font-weight:800;letter-spacing:-.045em;line-height:1;
+  background:linear-gradient(180deg,#fff 30%,#c4b5fd);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 4px 30px rgba(124,58,237,.65))}
+.hero p{margin:18px 0 0;font-size:clamp(15px,2vw,19px);color:var(--dim);text-shadow:0 2px 12px #000}
+.hero .roles span{color:var(--ink)}
+.hint{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);font-size:13px;color:var(--dim);text-align:center;pointer-events:none}
+.hint i{display:block;width:10px;height:10px;margin:8px auto 0;border-right:2px solid var(--violet);border-bottom:2px solid var(--violet);transform:rotate(45deg);animation:bob 1.6s infinite}
+@keyframes bob{50%{transform:translateY(6px) rotate(45deg)}}
+.hud{position:absolute;left:20px;bottom:96px;padding:12px 14px;border-radius:14px;font:12px/1.7 var(--mono);color:var(--dim);min-width:230px}
+.hud b{float:right;color:var(--ink);font-weight:500;margin-left:16px;font-variant-numeric:tabular-nums}
+.flash{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle,#fff 0,#e9d5ff 20%,#7c3aed 55%,transparent 80%)}
+
+/* ---------- content ---------- */
+main{position:relative;z-index:2;max-width:1160px;margin:0 auto;padding:40px max(4vw,16px) 160px;display:grid;gap:56px}
+.win{border-radius:16px;overflow:hidden;transition:max-width .4s}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+.reveal.in{opacity:1;transform:none}
+.titlebar{position:relative;display:flex;align-items:center;height:42px;padding:0 14px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)}
+.lights{display:flex;gap:8px;z-index:1}
+.l{width:13px;height:13px;border-radius:50%;border:0;padding:0;display:grid;place-items:center;font-size:9px;line-height:1;color:transparent;cursor:pointer}
+.l.r{background:#ff5f57}.l.y{background:#febc2e}.l.g{background:#28c840}
+.lights:hover .l{color:rgba(0,0,0,.6)}
+.wtitle{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;font-weight:600;color:var(--dim);pointer-events:none}
+.wbody{padding:clamp(22px,4vw,44px)}
+.win.min .wbody{display:none}
+.win.max{margin-inline:calc(-1 * max(4vw,16px) + 8px)}
+.win.sucked{animation:spaghetti 1.1s cubic-bezier(.6,0,.9,.4) forwards;pointer-events:none}
+.win.back{animation:spitback .8s cubic-bezier(.2,1.4,.4,1)}
+@keyframes spaghetti{40%{transform:translateY(8vh) scale(.6,1.25) rotate(10deg);opacity:.9}100%{transform:translateY(55vh) scale(.02,2.6) rotate(70deg);opacity:0}}
+@keyframes spitback{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+h2{font-size:clamp(32px,5vw,48px);line-height:1.05;letter-spacing:-.03em;margin:0 0 10px;text-wrap:balance}
+.lead{color:var(--dim);max-width:62ch;margin:0}
+.grad{background:linear-gradient(90deg,#c4b5fd,#f0abfc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:12px;text-decoration:none;font-weight:600;font-size:15px;cursor:pointer;
+  border:1px solid var(--line);background:rgba(255,255,255,.07);transition:background .2s,transform .2s}
+.btn:hover{background:rgba(255,255,255,.14);transform:translateY(-1px)}
+.btn.pri{background:linear-gradient(180deg,#8b5cf6,#6d28d9);border-color:rgba(255,255,255,.25);box-shadow:0 8px 30px rgba(124,58,237,.45)}
+.small{font-size:13px;color:var(--faint);margin-top:18px}
+kbd.k{font:12px var(--mono);border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--ink)}
+
+/* projects */
+.proj{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:clamp(20px,4vw,48px);align-items:center}
+.mock{border-radius:14px;padding:16px;background:rgba(10,4,24,.55);border:1px solid var(--line)}
+.mock svg{width:100%;height:auto;display:block}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.06);white-space:nowrap}
+.proj h3{font-size:28px;margin:0 0 6px;letter-spacing:-.02em}
+.proj ul{margin:16px 0 0;padding-left:18px;color:var(--dim)}
+.proj li{margin:4px 0}
+.more{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding:16px 20px;border-radius:12px;border:1px dashed rgba(196,181,253,.35);text-decoration:none;color:var(--dim)}
+.more:hover{color:var(--ink);border-color:var(--violet)}
+
+/* experience (glow cards) */
+.xp-head{text-align:center;margin-bottom:34px}
+.xp{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px}
+.card{position:relative;overflow:hidden;display:flex;gap:26px;align-items:center;padding:34px 30px;border-radius:22px;
+  background:rgba(18,8,40,.55);border:1px solid rgba(196,181,253,.16);transition:border-color .3s,transform .3s}
+.card:hover{border-color:rgba(196,181,253,.4);transform:translateY(-3px)}
+.blob{position:absolute;width:130px;height:90px;border-radius:50%;filter:blur(34px);opacity:.75;pointer-events:none;transition:transform .6s}
+.card:hover .blob{transform:scale(1.35)}
+.card svg{flex:none;width:92px;height:92px;position:relative}
+.card h3{margin:0 0 8px;font-size:22px;letter-spacing:-.01em}
+.card p{margin:0;color:var(--dim);font-size:15px}
+
+/* stack */
+.apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:22px 10px;margin:26px 0 28px}
+.app{background:none;border:0;cursor:pointer;display:grid;justify-items:center;gap:8px;font-size:13px;color:var(--dim)}
+.app .ico{width:68px;height:68px;border-radius:17px;display:grid;place-items:center;font:800 24px var(--sans);color:#fff;letter-spacing:-.03em;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 10px 24px rgba(0,0,0,.45);transition:transform .25s}
+.app:hover .ico{transform:translateY(-6px) scale(1.06)}
+.app.bounce .ico{animation:launch .9s}
+@keyframes launch{20%{transform:translateY(-22px)}40%{transform:none}60%{transform:translateY(-12px)}80%{transform:none}}
+.term{border-radius:12px;background:rgba(6,2,16,.78);border:1px solid var(--line);font:13.5px/1.6 var(--mono);overflow:hidden}
+.term .titlebar{height:34px}
+.term-out{padding:14px 16px 4px;max-height:300px;overflow:auto;white-space:pre-wrap;color:#ddd6fe}
+.term-out .c{color:var(--pink)}
+.term-line{display:flex;gap:8px;padding:0 16px 14px}
+.term-line span{color:var(--violet);white-space:nowrap}
+.term-line input{flex:1;background:none;border:0;outline:0;color:var(--ink);font:16px var(--mono);padding:0;min-height:26px}
+
+/* contact */
+.mail{display:grid;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:rgba(10,4,24,.45);max-width:720px}
+.mail label{display:flex;gap:10px;align-items:center;padding:0 14px;border-bottom:1px solid rgba(255,255,255,.08);min-height:46px;color:var(--faint);font-size:14px}
+.mail input,.mail textarea{flex:1;background:none;border:0;outline:0;color:var(--ink);font:16px var(--sans);padding:10px 0}
+.mail textarea{min-height:150px;resize:vertical;padding:14px}
+.to-chip{color:var(--ink);background:rgba(139,92,246,.35);padding:3px 10px;border-radius:999px;font-size:14px;overflow-wrap:anywhere}
+
+footer{position:relative;z-index:2;text-align:center;color:var(--faint);font-size:13px;padding:0 16px 130px}
+
+/* ---------- dock ---------- */
+.dock{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:55;display:flex;align-items:flex-end;gap:6px;padding:7px 9px;border-radius:22px;max-width:calc(100vw - 16px)}
+.dock a,.dock button{--s:1;position:relative;display:block;width:calc(50px * var(--s));height:calc(50px * var(--s));border:0;padding:0;background:none;cursor:pointer;transition:width .12s,height .12s}
+.dock svg{width:100%;height:100%;display:block}
+.dock .tip{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);padding:3px 10px;border-radius:7px;font-size:12px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s;background:rgba(30,14,60,.85);border:1px solid var(--line)}
+.dock a:hover .tip,.dock button:hover .tip{opacity:1}
+.dock .sep{width:1px;align-self:stretch;margin:4px 3px;background:rgba(255,255,255,.18)}
+.dock .suck{animation:suck 1s ease-in forwards}
+@keyframes suck{to{transform:translateX(var(--dx)) scale(0) rotate(300deg);opacity:0}}
+
+/* ---------- notifications, dialogs, fx ---------- */
+#toasts{position:fixed;top:40px;right:12px;z-index:80;display:grid;gap:10px;width:min(360px,calc(100vw - 24px))}
+.toast{display:flex;gap:12px;padding:12px 14px;border-radius:16px;animation:tin .45s cubic-bezier(.2,1.2,.4,1)}
+.toast.out{animation:tout .35s forwards}
+.toast svg{flex:none;width:38px;height:38px}
+.toast b{display:block;font-size:14px}
+.toast span{font-size:13px;color:var(--dim)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}}
+@keyframes tout{to{transform:translateX(110%);opacity:0}}
+.scrim{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(5,0,15,.45);padding:16px}
+.dlg{width:min(420px,100%);border-radius:16px;padding:26px;text-align:center}
+.dlg h3{margin:10px 0 4px;font-size:20px}
+.dlg .meta{font-size:13px;color:var(--dim);text-align:left;display:grid;gap:6px;margin:16px 0 4px}
+.dlg .meta div{display:flex;justify-content:space-between;gap:14px}
+.dlg .meta div b{font-weight:500;color:var(--ink);text-align:right}
+.dlg .row{display:flex;justify-content:center;gap:10px;margin-top:20px}
+.egg-list{text-align:left;display:grid;gap:6px;margin-top:14px;max-height:50vh;overflow:auto;font-size:14px}
+.egg-list div{display:flex;gap:10px;align-items:center;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.05)}
+.egg-list .got{color:var(--ink)} .egg-list .no{color:var(--faint)}
+.bar{height:6px;border-radius:9px;background:rgba(255,255,255,.1);overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#8b5cf6,#f0abfc)}
+#fx{position:fixed;inset:0;z-index:85;pointer-events:none;width:100%;height:100%}
+.comet{position:fixed;z-index:4;width:150px;height:40px;cursor:pointer;animation:fly 1.6s linear forwards}
+.comet::before{content:"";position:absolute;right:0;top:50%;width:150px;height:2px;transform:translateY(-50%);background:linear-gradient(90deg,transparent,#f0abfc 70%,#fff);border-radius:2px;filter:drop-shadow(0 0 6px #f0abfc)}
+@keyframes fly{from{transform:translate(0,0) rotate(18deg);opacity:0}10%{opacity:1}to{transform:translate(-70vw,24vw) rotate(18deg);opacity:0}}
+.astro{position:fixed;z-index:84;left:-140px;top:30vh;width:110px;cursor:pointer;animation:drift 16s linear forwards}
+@keyframes drift{to{transform:translate(calc(100vw + 280px),18vh) rotate(380deg)}}
+body.glow main{filter:drop-shadow(0 0 40px rgba(240,171,252,.5))}
+
+@media (max-width:860px){
+  .proj{grid-template-columns:minmax(0,1fr)}
+  .xp{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:600px){
+  .mb-link,.mb-wifi{display:none}
+  .card{flex-direction:column;align-items:flex-start;padding:26px 22px}
+  .hud{left:12px;right:12px;bottom:88px;min-width:0}
+  .hint{bottom:200px}
+  .dock{gap:3px;padding:6px}
+  .dock a,.dock button{width:calc(40px * var(--s));height:calc(40px * var(--s))}
+  .dock .sep{margin:3px 1px}
+}
+@media (prefers-reduced-motion:reduce){
+  .reveal{transform:none;transition:opacity .4s}
+  .hint i{animation:none}
+}
+</style>
+</head>
+<body>
+<canvas id="sky" aria-hidden="true"></canvas>
+
+<!-- ============ menu bar ============ -->
+<header class="menubar" id="top">
+  <button class="mb-btn mb-logo" id="logo" aria-label="Universe menu" aria-expanded="false">
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0abfc"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><circle cx="12" cy="12" r="6.2" fill="url(#lg)"/><ellipse cx="12" cy="12" rx="11" ry="3.6" fill="none" stroke="#e9d5ff" stroke-width="1.6" transform="rotate(-24 12 12)"/></svg>
+  </button>
+  <div class="menu glass" id="umenu" role="menu">
+    <button data-act="about" role="menuitem">About This Universe</button>
+    <button data-act="eggs" role="menuitem">Easter Eggs… <kbd>?</kbd></button>
+    <hr>
+    <button data-act="bigbang" role="menuitem">Restart the Big Bang</button>
+  </div>
+  <a class="mb-btn mb-name" href="#welcome">mistydrink</a>
+  <a class="mb-btn mb-link" href="#projects">Projects</a>
+  <a class="mb-btn mb-link" href="#experience">Experience</a>
+  <a class="mb-btn mb-link" href="#stack">Stack</a>
+  <a class="mb-btn mb-link" href="#contact">Contact</a>
+  <div class="mb-right">
+    <a class="mb-btn mb-ico" href="https://github.com/mistydrink" target="_blank" rel="noopener" aria-label="GitHub">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+    </a>
+    <span class="mb-btn mb-ico mb-wifi" title="signal from the event horizon" aria-hidden="true">
+      <svg width="16" height="14" viewBox="0 0 16 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1.5 5a9.5 9.5 0 0 1 13 0M4 7.6a6 6 0 0 1 8 0M6.4 10.1a2.6 2.6 0 0 1 3.2 0"/><circle cx="8" cy="12.4" r=".9" fill="currentColor"/></svg>
+    </span>
+    <button class="mb-btn" id="clock" title="click me">--:--</button>
+  </div>
+</header>
+
+<!-- ============ intro: fall into the black hole ============ -->
+<section class="intro" id="intro" aria-label="Intro">
+  <div class="stick" id="stick">
+    <canvas id="bh" aria-hidden="true"></canvas>
+    <div class="hero" id="hero">
+      <h1>mistydrink</h1>
+      <p class="roles"><span>web developer</span> · <span>minecraft modder</span> · <span>fintech developer</span></p>
+    </div>
+    <div class="hud glass" id="hud" aria-hidden="true">
+      <div>distance <b id="h-d">9.50 rₛ</b></div>
+      <div>time dilation <b id="h-t">1.06×</b></div>
+      <div>status <b id="h-s">stable orbit</b></div>
+    </div>
+    <div class="hint" id="hint">scroll to fall in<i></i></div>
+    <div class="flash" id="flash"></div>
+  </div>
+</section>
+
+<!-- ============ inside ============ -->
+<main id="inside">
+
+  <article class="win glass reveal" id="welcome">
+    <div class="titlebar"><div class="lights"><button class="l r" aria-label="Close window">×</button><button class="l y" aria-label="Minimise window">−</button><button class="l g" aria-label="Zoom window">+</button></div><div class="wtitle">Welcome</div></div>
+    <div class="wbody">
+      <h2>Welcome to the <span class="grad">inside</span>.</h2>
+      <p class="lead">You just crossed the event horizon, so there's no going back (try it anyway). I'm mistydrink: I build websites and web apps, write Minecraft mods, and work as a fintech developer. Everything on this page, including the black hole you fell through, runs live in your browser.</p>
+      <div class="btns">
+        <a class="btn pri" href="#projects">See my projects</a>
+        <a class="btn" href="https://github.com/mistydrink" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+      <p class="small">psst: this universe is full of space easter eggs. Press <kbd class="k">?</kbd> to see how many you've found.</p>
+    </div>
+  </article>
+
+  <article class="win glass reveal" id="projects">
+    <div class="titlebar"><div class="lights"><button class="l r" aria-label="Close window">×</button><button class="l y" aria-label="Minimise window">−</button><button class="l g" aria-label="Zoom window">+</button></div><div class="wtitle">Projects — Finder</div></div>
+    <div class="wbody">
+      <h2>Projects</h2>
+      <p class="lead" style="margin-bottom:30px">Things I've launched into orbit.</p>
+      <div class="proj">
+        <div class="mock" aria-hidden="true">
+          <svg viewBox="0 0 230 196" id="board"></svg>
+          <div class="chips">
+            <span class="chip" style="color:#67e8f9">!! Brilliant</span>
+            <span class="chip" style="color:#86efac">★ Best</span>
+            <span class="chip" style="color:#fde68a">?! Inaccuracy</span>
+            <span class="chip" style="color:#fca5a5">?? Blunder</span>
+          </div>
+        </div>
+        <div>
+          <h3>Open Review</h3>
+          <p class="lead">Free chess game review that runs Stockfish 17 right in your browser. Paste a PGN or import your recent games from Chess.com or Lichess, and every move gets graded from Brilliant to Blunder, with accuracy scores, an evaluation graph and the engine's best move drawn on the board. No server and no paywall, and your games never leave the page.</p>
+          <ul>
+            <li>Practice mode turns your mistakes into puzzles</li>
+            <li>Insights across all your saved reviews</li>
+            <li>Share links that carry the whole review in the URL</li>
+            <li>Works offline and installs as an app</li>
+          </ul>
+          <div class="chips"><span class="chip">JavaScript</span><span class="chip">WebAssembly</span><span class="chip">Stockfish 17</span><span class="chip">PWA</span><span class="chip">GPLv3</span></div>
+          <div class="btns">
+            <a class="btn pri" href="https://mistydrink.github.io/open-review/" target="_blank" rel="noopener">Open live site ↗</a>
+            <a class="btn" href="https://github.com/mistydrink/open-review" target="_blank" rel="noopener">View source ↗</a>
+          </div>
+        </div>
+      </div>
+      <a class="more" href="https://github.com/mistydrink" target="_blank" rel="noopener"><span>More experiments on github.com/mistydrink</span><span>↗</span></a>
+    </div>
+  </article>
+
+  <section id="experience" class="reveal">
+    <div class="xp-head"><h2>My <span class="grad">Experience</span></h2></div>
+    <div class="xp">
+      <div class="card glass">
+        <span class="blob" style="left:-40px;bottom:-40px;background:#8b5cf6"></span>
+        <span class="blob" style="right:60px;top:-60px;background:#d946ef;opacity:.45"></span>
+        <svg viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c084fc"/><stop offset="1" stop-color="#6d28d9"/></linearGradient></defs><rect x="8" y="16" width="80" height="62" rx="10" fill="url(#g1)"/><rect x="8" y="16" width="80" height="14" rx="7" fill="#f0abfc" opacity=".55"/><circle cx="18" cy="23" r="2.6" fill="#fff"/><circle cx="26" cy="23" r="2.6" fill="#fff" opacity=".75"/><circle cx="34" cy="23" r="2.6" fill="#fff" opacity=".5"/><path d="M38 44l-10 9 10 9M58 44l10 9-10 9M52 40l-8 26" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div><h3>Web Developer</h3><p>Designs and builds fast, hand-made websites and web apps, from interactive front ends like this one to the code that runs behind them.</p></div>
+      </div>
+      <div class="card glass">
+        <span class="blob" style="right:-30px;top:-46px;background:#a855f7"></span>
+        <span class="blob" style="left:30%;bottom:-70px;background:#6366f1;opacity:.5"></span>
+        <svg viewBox="0 0 96 96" aria-hidden="true"><path d="M48 10l34 18-34 18-34-18z" fill="#c4b5fd"/><path d="M14 28l34 18v40L14 68z" fill="#7c3aed"/><path d="M82 28L48 46v40l34-18z" fill="#4c1d95"/><path d="M31 19l34 18M65 19L31 37M14 48l34 18M48 66l34-18M31 37v40M65 37v40" stroke="#1e0b3d" stroke-width="1.6" opacity=".45"/><rect x="24" y="44" width="7" height="7" fill="#f0abfc" opacity=".8"/><rect x="62" y="56" width="7" height="7" fill="#a78bfa" opacity=".8"/><path d="M76 8l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z" fill="#fff"/></svg>
+        <div><h3>Minecraft Modder</h3><p>Writes Java mods for Minecraft: new mechanics, client-side tweaks, and keeping everything running smoothly across game updates.</p></div>
+      </div>
+      <div class="card glass">
+        <span class="blob" style="left:40%;top:-60px;background:#c026d3"></span>
+        <span class="blob" style="right:-40px;bottom:-50px;background:#7c3aed;opacity:.55"></span>
+        <svg viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0abfc"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs><circle cx="46" cy="52" r="34" fill="none" stroke="url(#g3)" stroke-width="5"/><circle cx="46" cy="52" r="27" fill="#2e1065"/><rect x="28" y="56" width="8" height="14" rx="2" fill="#a78bfa"/><rect x="42" y="46" width="8" height="24" rx="2" fill="#c084fc"/><rect x="56" y="36" width="8" height="34" rx="2" fill="#f0abfc"/><path d="M60 26l14-14M74 12v10M74 12H64" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <div><h3>Fintech Developer</h3><p>Builds software for finance, where every number has to be right: transactions, prices and the data pipelines behind them.</p></div>
+      </div>
+      <div class="card glass">
+        <span class="blob" style="right:30%;bottom:-60px;background:#8b5cf6"></span>
+        <span class="blob" style="left:-50px;top:-30px;background:#ec4899;opacity:.45"></span>
+        <svg viewBox="0 0 96 96" aria-hidden="true"><defs><radialGradient id="g4" cx=".4" cy=".35"><stop offset="0" stop-color="#f5d0fe"/><stop offset="1" stop-color="#9333ea"/></radialGradient></defs><circle cx="48" cy="50" r="36" fill="#2e1065" opacity=".8"/><circle cx="48" cy="30" r="10" fill="url(#g4)"/><path d="M40 42h16l-3 6 6 22H37l6-22z" fill="url(#g4)"/><rect x="30" y="70" width="36" height="9" rx="4" fill="#c084fc"/></svg>
+        <div><h3>Open Source</h3><p>Made Open Review, a free chess analysis tool powered by Stockfish, and keeps the code public on GitHub for anyone to use or learn from.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <article class="win glass reveal" id="stack">
+    <div class="titlebar"><div class="lights"><button class="l r" aria-label="Close window">×</button><button class="l y" aria-label="Minimise window">−</button><button class="l g" aria-label="Zoom window">+</button></div><div class="wtitle">Tech Stack — Launchpad</div></div>
+    <div class="wbody">
+      <h2>Tech stack</h2>
+      <p class="lead">The languages I fly with. Click one to launch it.</p>
+      <div class="apps" id="apps"></div>
+      <div class="term">
+        <div class="titlebar"><div class="lights"><span class="l r"></span><span class="l y"></span><span class="l g"></span></div><div class="wtitle">mistydrink@orbit — zsh</div></div>
+        <div class="term-out" id="tout" aria-live="polite"></div>
+        <label class="term-line"><span>mistydrink@orbit ~ %</span><input id="tin" autocomplete="off" spellcheck="false" aria-label="Terminal input"></label>
+      </div>
+    </div>
+  </article>
+
+  <article class="win glass reveal" id="contact">
+    <div class="titlebar"><div class="lights"><button class="l r" aria-label="Close window">×</button><button class="l y" aria-label="Minimise window">−</button><button class="l g" aria-label="Zoom window">+</button></div><div class="wtitle">New Message — Mail</div></div>
+    <div class="wbody">
+      <h2>Contact</h2>
+      <p class="lead" style="margin-bottom:24px">Got a project, a mod idea or a job? Send a transmission.</p>
+      <form class="mail" id="mail">
+        <label>To: <span class="to-chip">potatoe20023@gmail.com</span></label>
+        <label for="m-sub">Subject: <input id="m-sub" name="subject" placeholder="Hello from Earth"></label>
+        <textarea id="m-body" name="body" aria-label="Message" placeholder="Write your message…"></textarea>
+      </form>
+      <div class="btns">
+        <button class="btn pri" id="send" type="button">Send transmission</button>
+        <button class="btn" id="copy" type="button">Copy email</button>
+        <a class="btn" href="https://github.com/mistydrink" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+      <p class="small">Or email directly: potatoe20023@gmail.com</p>
+    </div>
+  </article>
+</main>
+
+<footer>© 2026 mistydrink · built in orbit · no stars were harmed</footer>
+
+<!-- ============ dock ============ -->
+<nav class="dock glass" id="dock" aria-label="Dock"></nav>
+<div id="toasts" aria-live="polite"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<script>
+{
+/* =========================================================
+   helpers
+   ========================================================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const PLANET = '<svg viewBox="0 0 40 40"><defs><radialGradient id="tp" cx=".35" cy=".3"><stop offset="0" stop-color="#f5d0fe"/><stop offset="1" stop-color="#7c3aed"/></radialGradient></defs><rect width="40" height="40" rx="10" fill="#1e0b3d"/><circle cx="20" cy="20" r="9" fill="url(#tp)"/><ellipse cx="20" cy="20" rx="16" ry="5" fill="none" stroke="#e9d5ff" stroke-width="1.6" transform="rotate(-22 20 20)"/></svg>';
+
+/* =========================================================
+   notifications + dialogs
+   ========================================================= */
+function toast(title, text) {
+  const t = document.createElement('div');
+  t.className = 'toast glass';
+  t.innerHTML = PLANET + `<div><b>${esc(title)}</b><span>${esc(text)}</span></div>`;
+  const box = $('#toasts'); box.prepend(t);
+  while (box.children.length > 3) box.lastChild.remove();
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 400); }, 5200);
+}
+function dialog(html, buttons) {
+  const s = document.createElement('div');
+  s.className = 'scrim';
+  s.innerHTML = `<div class="dlg glass" role="dialog" aria-modal="true">${html}<div class="row"></div></div>`;
+  const row = $('.row', s);
+  const close = () => { s.remove(); document.removeEventListener('keydown', onEsc); };
+  const onEsc = e => { if (e.key === 'Escape') close(); };
+  buttons.forEach(([label, fn, pri]) => {
+    const b = document.createElement('button');
+    b.className = 'btn' + (pri ? ' pri' : ''); b.textContent = label;
+    b.onclick = () => { close(); fn && fn(); };
+    row.append(b);
+  });
+  s.addEventListener('click', e => { if (e.target === s) close(); });
+  document.addEventListener('keydown', onEsc);
+  document.body.append(s);
+  row.lastChild && row.lastChild.focus();
+}
+
+/* =========================================================
+   easter egg tracker
+   ========================================================= */
+const EGGS = [
+  ['konami', 'Warp drive', 'an old cheat code still works here'],
+  ['hawking', 'Hawking radiation', 'type the name of a famous physicist'],
+  ['pluto', 'Justice for Pluto', 'poke the planet in the menu bar a few times'],
+  ['mars', 'Martian time', 'check the clock'],
+  ['spaghetti', 'Spaghettified', 'close a window'],
+  ['trash', 'Empty the void', 'the trash in the dock goes deep'],
+  ['comet', 'Comet catcher', 'keep an eye on the sky'],
+  ['sudo', 'Houston, we have a problem', 'ask the terminal for more power'],
+  ['ping', 'Interplanetary ping', 'ping something far away'],
+  ['answer', 'The answer', 'type the answer to everything'],
+  ['poke', "Don't poke the void", 'click the black hole itself'],
+  ['escape', 'Impossible escape', 'go back the way you came'],
+  ['idle', 'Lost in space', 'go quiet for a while'],
+];
+let found = {};
+try { found = JSON.parse(localStorage.getItem('mistydrink-eggs') || '{}') || {}; } catch (e) { found = {}; }
+function award(id) {
+  if (found[id]) return false;
+  found[id] = 1;
+  try { localStorage.setItem('mistydrink-eggs', JSON.stringify(found)); } catch (e) {}
+  const egg = EGGS.find(e => e[0] === id);
+  const n = Object.keys(found).length;
+  toast(`Easter egg found: ${egg[1]}`, `${n} of ${EGGS.length} discovered.`);
+  if (n === EGGS.length) setTimeout(() => toast('100% complete', 'You are now a certified astronaut. Houston is proud.'), 1200);
+  return true;
+}
+function showEggs() {
+  const n = Object.keys(found).length;
+  const list = EGGS.map(([id, name, hint]) => found[id]
+    ? `<div class="got">✦ <span>${esc(name)}</span></div>`
+    : `<div class="no">· <span>??? — ${esc(hint)}</span></div>`).join('');
+  dialog(`<h3>Easter eggs</h3><p style="margin:0;color:var(--dim);font-size:14px">${n} of ${EGGS.length} found</p>
+    <div class="bar"><i style="width:${(n / EGGS.length * 100).toFixed(0)}%"></i></div><div class="egg-list">${list}</div>`, [['Close']]);
+}
+
+/* =========================================================
+   WebGL particle black hole
+   ========================================================= */
+const BH = (() => {
+  const canvas = $('#bh');
+  const gl = canvas.getContext('webgl', { alpha: false, antialias: false, depth: false, stencil: false, powerPreference: 'high-performance' });
+  if (!gl) { document.documentElement.classList.add('nogl'); return null; }
+
+  const VS_P = `
+  attribute vec4 aP;
+  uniform float uT,uD,uTilt,uSpin,uFlow,uPx,uRin,uRout;
+  uniform vec2 uScale,uOff;
+  varying vec3 vC; varying float vA;
+  void main(){
+    float sd=aP.z;
+    float u=fract(aP.x+uT*uFlow*(.75+.5*sd));
+    float r=uRout*pow(uRin/uRout,pow(u,1.7));
+    float ang=aP.y-2.1*log(r/uRout)+uT*uSpin;
+    float y=(fract(sd*91.7)-.5)*.05*r;
+    vec3 P=vec3(cos(ang)*r,y,sin(ang)*r);
+    float ct=cos(uTilt),st=sin(uTilt);
+    float sy=P.z*ct-P.y*st;
+    float depth=uD-(P.y*ct+P.z*st);
+    if(depth<.06){gl_Position=vec4(2.,2.,2.,1.);gl_PointSize=0.;vA=0.;vC=vec3(0.);return;}
+    float f=1.6/depth;
+    gl_Position=vec4(vec2(P.x,sy)*f*uScale+uOff,0.,1.);
+    float t=clamp((r-uRin)/(uRout-uRin),0.,1.);
+    vec3 c=mix(vec3(1.,.88,1.),vec3(.62,.34,1.),smoothstep(0.,.22,t));
+    c=mix(c,vec3(.2,.08,.6),smoothstep(.22,.85,t));
+    c=mix(c,vec3(.96,.36,.86),step(.86,fract(sd*13.3))*.65);
+    float b=pow(1.-t,1.25)*1.2+.1;
+    b*=smoothstep(0.,.07,u)*(1.-smoothstep(.93,1.,u));
+    b*=1.-.32*P.x/max(r,.001);
+    vC=c; vA=b;
+    gl_PointSize=clamp(aP.w*uPx*f,1.,48.);
+  }`;
+  const FS_P = `
+  precision mediump float;
+  varying vec3 vC; varying float vA;
+  void main(){ vec2 d=gl_PointCoord-.5; float a=exp(-dot(d,d)*14.); gl_FragColor=vec4(vC*vA*a,1.); }`;
+  const VS_Q = `attribute vec2 aQ; void main(){ gl_Position=vec4(aQ,0.,1.); }`;
+  const FS_Q = `
+  precision mediump float;
+  uniform vec2 uRes,uC; uniform float uR,uT,uPulse,uWave;
+  float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+  float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+    return mix(mix(h(i),h(i+vec2(1.,0.)),f.x),mix(h(i+vec2(0.,1.)),h(i+1.),f.x),f.y);}
+  float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<4;i++){s+=a*n(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return s;}
+  void main(){
+    vec2 d=gl_FragCoord.xy-uC;
+    float dist=length(d), rr=dist/uR, a=atan(d.y,d.x);
+    vec2 dir=d/max(dist,1.);
+    float sw=a+1.8*log(max(rr,.01))-uT*.22;
+    float f=fbm(vec2(cos(sw),sin(sw))*rr*1.15+uT*.03);
+    float hz=smoothstep(1.,1.3,rr)*exp(-(rr-1.)*.3)*(.2+1.15*f*f);
+    vec3 col=mix(vec3(.08,.02,.28),vec3(.48,.18,1.),f)*hz*.85;
+    vec2 sp=d*(1.-2.4/(rr*rr+.05));
+    vec2 g=(sp+vec2(uT*6.,0.))/3.;
+    vec2 gi=floor(g);
+    float s=h(gi);
+    float dot1=smoothstep(.5,.12,length(fract(g)-.5));
+    col+=vec3(.86,.8,1.)*step(.9975,s)*dot1*(.55+.45*sin(uT*3.+s*200.))*smoothstep(1.,1.5,rr);
+    float wn=n(dir*4.+vec2(uT*.6,-uT*.4));
+    float ring=exp(-pow((rr-1.035)/.032,2.))*(.85+.9*wn)*(1.+uPulse*2.2);
+    float glow=exp(-max(rr-1.,0.)*7.)*.5*step(1.,rr);
+    col+=vec3(.93,.8,1.)*ring+vec3(.56,.28,1.)*glow*(.7+.6*wn);
+    if(uWave>0.) col+=vec3(.85,.65,1.)*exp(-pow((rr-(1.+uWave*6.))/.07,2.))*(1.-uWave);
+    float core=1.-smoothstep(.965,1.,rr);
+    col+=vec3(.36,.12,.72)*smoothstep(.82,1.,rr)*core*.6;
+    gl_FragColor=vec4(col,core);
+  }`;
+
+  function prog(vs, fs) {
+    const p = gl.createProgram();
+    for (const [type, src] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]]) {
+      const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+      gl.attachShader(p, s);
+    }
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+    const u = {}, n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+    for (let i = 0; i < n; i++) { const nm = gl.getActiveUniform(p, i).name; u[nm] = gl.getUniformLocation(p, nm); }
+    return { p, u };
+  }
+  let P, Q;
+  try { P = prog(VS_P, FS_P); Q = prog(VS_Q, FS_Q); }
+  catch (e) { console.warn(e); document.documentElement.classList.add('nogl'); return null; }
+  const locP = gl.getAttribLocation(P.p, 'aP'), locQ = gl.getAttribLocation(Q.p, 'aQ');
+
+  // particle data is static: all motion happens in the vertex shader (one draw call, zero CPU per frame)
+  const small = innerWidth < 700 || (navigator.hardwareConcurrency || 8) <= 4;
+  const N = small ? 16000 : 42000;
+  const data = new Float32Array(N * 4);
+  const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+  for (let i = 0; i < N; i++) {
+    const arm = (Math.random() * 3 | 0) * (Math.PI * 2 / 3);
+    const ang = Math.random() < .72 ? arm + gauss() * .55 : Math.random() * Math.PI * 2;
+    data.set([Math.random(), ang, Math.random(), 1 + Math.pow(Math.random(), 7) * 6], i * 4);
+  }
+  const pbuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, pbuf); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+  const qbuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, qbuf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+
+  const RH = .28;                       // horizon radius in world units
+  let W = 0, H = 0, quality = 1, raf = 0, running = false, last = 0, t = 0;
+  let frames = 0, ftSum = 0;
+  const st = { p: 0, mx: 0, my: 0, ox: 0, oy: 0, pulse: 0, wave: 0, boost: 0 };
+
+  function resize() {
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    const s = Math.min(devicePixelRatio || 1, 1.5) * quality;
+    canvas.width = Math.max(1, Math.round(W * s)); canvas.height = Math.max(1, Math.round(H * s));
+  }
+  function frame(now) {
+    raf = 0;
+    if (!running) return;
+    const dt = Math.min(.05, (now - last) / 1000 || .016); last = now;
+    // adaptive resolution: drop render scale if the GPU struggles
+    ftSum += dt; if (++frames === 45) { if (ftSum / 45 > .024 && quality > .5) { quality -= .2; resize(); } frames = 0; ftSum = 0; }
+    const p = st.p, e = ease(p), fall = Math.pow(p, 1.5);
+    const speed = (reduce ? .25 : 1) * (1 + p * 3.5 + st.boost * 6);
+    t += dt * speed;
+    st.boost *= Math.exp(-dt * 1.2);
+    st.pulse *= Math.exp(-dt * 3);
+    if (st.wave > 0) { st.wave += dt / 1.3; if (st.wave >= 1) st.wave = 0; }
+    st.ox = lerp(st.ox, st.mx * .04, Math.min(1, dt * 3)); st.oy = lerp(st.oy, -st.my * .04, Math.min(1, dt * 3));
+
+    const D = lerp(2.4, .2, fall);
+    const tilt = lerp(.55, 0, e) + st.my * .08 * (1 - p);
+    const cw = canvas.width, ch = canvas.height, m = Math.min(cw, ch);
+    gl.viewport(0, 0, cw, ch);
+    gl.clearColor(.008, 0, .03, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.enable(gl.BLEND);
+
+    gl.useProgram(P.p);
+    gl.bindBuffer(gl.ARRAY_BUFFER, pbuf); gl.enableVertexAttribArray(locP); gl.vertexAttribPointer(locP, 4, gl.FLOAT, false, 0, 0);
+    gl.blendFunc(gl.ONE, gl.ONE);
+    gl.uniform1f(P.u.uT, t); gl.uniform1f(P.u.uD, D); gl.uniform1f(P.u.uTilt, tilt);
+    gl.uniform1f(P.u.uSpin, .09); gl.uniform1f(P.u.uFlow, .03);
+    gl.uniform1f(P.u.uPx, ch / 900 * (small ? 1.5 : 1.25)); gl.uniform1f(P.u.uRin, RH * 1.04); gl.uniform1f(P.u.uRout, 1.3);
+    gl.uniform2f(P.u.uScale, m / cw, m / ch); gl.uniform2f(P.u.uOff, st.ox, st.oy);
+    gl.drawArrays(gl.POINTS, 0, N);
+
+    gl.useProgram(Q.p);
+    gl.bindBuffer(gl.ARRAY_BUFFER, qbuf); gl.enableVertexAttribArray(locQ); gl.vertexAttribPointer(locQ, 2, gl.FLOAT, false, 0, 0);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.uniform2f(Q.u.uRes, cw, ch);
+    gl.uniform2f(Q.u.uC, cw * .5 * (1 + st.ox), ch * .5 * (1 + st.oy));
+    gl.uniform1f(Q.u.uR, RH * (1.6 / D) * m / 2 * (1 - hawk * .3));
+    gl.uniform1f(Q.u.uT, t); gl.uniform1f(Q.u.uPulse, st.pulse); gl.uniform1f(Q.u.uWave, st.wave);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    raf = requestAnimationFrame(frame);
+  }
+  let hawk = 0;
+  function setRunning(on) {
+    if (on === running) return;
+    running = on;
+    if (on && !raf) { last = performance.now(); raf = requestAnimationFrame(frame); }
+  }
+  new ResizeObserver(resize).observe(canvas);
+  resize();
+  canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); running = false; document.documentElement.classList.add('nogl'); });
+  return {
+    st, setRunning,
+    holeRadiusCss: () => RH * (1.6 / lerp(2.4, .2, Math.pow(st.p, 1.5))) * Math.min(W, H) / 2,
+    hawking() { hawk = 1; setTimeout(() => { hawk = 0; }, 4500); st.pulse = 1.5; },
+  };
+})();
+
+/* =========================================================
+   intro scroll: fall into the hole
+   ========================================================= */
+const intro = $('#intro'), stick = $('#stick'), hero = $('#hero'), hint = $('#hint'), flash = $('#flash');
+const hD = $('#h-d'), hT = $('#h-t'), hS = $('#h-s');
+let reachedInside = false, introVisible = true, scrollQueued = false;
+function updateIntro() {
+  scrollQueued = false;
+  const r = intro.getBoundingClientRect();
+  const p = clamp(-r.top / (r.height - innerHeight));
+  const e = ease(p), fall = Math.pow(p, 1.5);
+  if (BH) BH.st.p = p;
+  const sx = Math.max(.02, 1 - e * 1.05), sy = Math.max(.02, 1 - e * .7);
+  hero.style.transform = `translate(-50%,-50%) rotate(${(e * 150).toFixed(1)}deg) scale(${sx.toFixed(3)},${sy.toFixed(3)})`;
+  hero.style.opacity = clamp(1 - p * 1.7).toFixed(3);
+  hero.style.filter = p > .01 ? `blur(${(p * 9).toFixed(1)}px)` : 'none';
+  hint.style.opacity = clamp(1 - p * 6).toFixed(3);
+  const rs = 1 + (1 - fall) * 8.5;
+  hD.textContent = rs.toFixed(2) + ' rₛ';
+  hT.textContent = p > .985 ? '∞' : (1 / Math.sqrt(1 - 1 / Math.max(rs, 1.0001))).toFixed(2) + '×';
+  hS.textContent = p < .25 ? 'stable orbit' : p < .6 ? 'falling' : p < .88 ? 'spaghettifying' : 'crossing horizon';
+  flash.style.opacity = (clamp(1 - Math.abs(p - .95) / .05) * .8).toFixed(3);
+  stick.style.opacity = (p < .93 ? 1 : clamp(1 - (p - .93) / .07)).toFixed(3);
+  $('#hud').style.opacity = clamp(1 - (p - .8) / .1).toFixed(3);
+  if (p > .995) reachedInside = true;
+  if (reachedInside && p < .03) award('escape') && toast('Wait, what?', 'Nothing escapes a black hole. Except you, apparently.');
+}
+addEventListener('scroll', () => { if (!scrollQueued) { scrollQueued = true; requestAnimationFrame(updateIntro); } }, { passive: true });
+new IntersectionObserver(([en]) => { introVisible = en.isIntersecting; BH && BH.setRunning(introVisible && !document.hidden); }).observe(intro);
+document.addEventListener('visibilitychange', () => BH && BH.setRunning(introVisible && !document.hidden));
+updateIntro();
+
+// mouse parallax + poking the void
+let pokes = 0;
+stick.addEventListener('mousemove', e => {
+  if (!BH) return;
+  BH.st.mx = e.clientX / innerWidth * 2 - 1; BH.st.my = e.clientY / innerHeight * 2 - 1;
+});
+stick.addEventListener('mouseleave', () => { if (BH) { BH.st.mx = 0; BH.st.my = 0; } });
+stick.addEventListener('click', e => {
+  if (!BH) return;
+  const r = stick.getBoundingClientRect();
+  const cx = r.width / 2 * (1 + BH.st.ox), cy = r.height / 2 * (1 - BH.st.oy);
+  if (Math.hypot(e.clientX - r.left - cx, e.clientY - r.top - cy) < BH.holeRadiusCss() * 1.15) {
+    BH.st.wave = .001; BH.st.pulse = 1;
+    if (++pokes === 3) award('poke') && toast('Please stop poking the void', 'It is trying very hard to concentrate.');
+  }
+});
+
+/* =========================================================
+   static sky inside (drawn once, so glass blur stays cheap)
+   ========================================================= */
+function drawSky() {
+  const c = $('#sky'), x = c.getContext('2d');
+  const w = innerWidth, h = innerHeight, d = Math.min(devicePixelRatio || 1, 2);
+  c.width = w * d; c.height = h * d; x.setTransform(d, 0, 0, d, 0, 0);
+  const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#0b0420'); g.addColorStop(1, '#05020c');
+  x.fillStyle = g; x.fillRect(0, 0, w, h);
+  const blobs = [[.15, .2, .55, '124,58,237', .32], [.85, .35, .5, '217,70,239', .18], [.5, .95, .7, '79,70,229', .25], [.75, .85, .35, '168,85,247', .2]];
+  for (const [bx, by, br, col, a] of blobs) {
+    const rg = x.createRadialGradient(bx * w, by * h, 0, bx * w, by * h, br * Math.max(w, h));
+    rg.addColorStop(0, `rgba(${col},${a})`); rg.addColorStop(1, `rgba(${col},0)`);
+    x.fillStyle = rg; x.fillRect(0, 0, w, h);
+  }
+  const n = Math.round(w * h / 2600);
+  for (let i = 0; i < n; i++) {
+    const r = Math.random() < .93 ? Math.random() * .9 + .25 : Math.random() * 1.6 + 1;
+    x.fillStyle = `rgba(${230 + Math.random() * 25 | 0},${215 + Math.random() * 40 | 0},255,${(.25 + Math.random() * .7).toFixed(2)})`;
+    x.beginPath(); x.arc(Math.random() * w, Math.random() * h, r, 0, 7); x.fill();
+  }
+}
+let skyT; addEventListener('resize', () => { clearTimeout(skyT); skyT = setTimeout(drawSky, 200); });
+drawSky();
+
+/* =========================================================
+   reveal on scroll
+   ========================================================= */
+const revealObs = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); revealObs.unobserve(en.target); } }), { threshold: .12 });
+$$('.reveal').forEach(el => revealObs.observe(el));
+
+/* =========================================================
+   menu bar: universe menu, clock (Earth / Mars)
+   ========================================================= */
+const logo = $('#logo'), umenu = $('#umenu');
+let logoClicks = [];
+logo.addEventListener('click', e => {
+  e.stopPropagation();
+  const open = !umenu.classList.contains('open');
+  umenu.classList.toggle('open', open); logo.setAttribute('aria-expanded', open);
+  const now = Date.now(); logoClicks = logoClicks.filter(t => now - t < 2500); logoClicks.push(now);
+  if (logoClicks.length >= 5) {
+    logoClicks = []; umenu.classList.remove('open');
+    logo.classList.add('spin'); setTimeout(() => logo.classList.remove('spin'), 700);
+    award('pluto') && toast('Justice for Pluto', 'Demoted in 2006, still a planet in our hearts.');
+  }
+});
+document.addEventListener('click', () => { umenu.classList.remove('open'); logo.setAttribute('aria-expanded', false); });
+umenu.addEventListener('click', e => {
+  const act = e.target.closest('button')?.dataset.act;
+  if (act === 'about') aboutUniverse();
+  if (act === 'eggs') showEggs();
+  if (act === 'bigbang') { reachedInside = false; scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); toast('Big Bang restarted', 'Universe rebooting… estimated time: 13.8 billion years.'); }
+});
+function aboutUniverse() {
+  dialog(`<svg width="84" height="84" viewBox="0 0 84 84"><defs><radialGradient id="au"><stop offset=".48" stop-color="#000"/><stop offset=".53" stop-color="#f5d0fe"/><stop offset=".62" stop-color="#8b5cf6"/><stop offset="1" stop-color="#2e1065" stop-opacity="0"/></radialGradient></defs><circle cx="42" cy="42" r="42" fill="url(#au)"/></svg>
+    <h3>The Universe</h3><p style="margin:0;color:var(--dim);font-size:14px">Version 13.8 billion years</p>
+    <div class="meta"><div>Processor<b>1 singularity</b></div><div>Memory<b>∞ (mostly dark matter)</b></div>
+    <div>Startup Disk<b>Big Bang HD</b></div><div>Visitors here<b>you</b></div></div>`,
+    [['More Info…', () => toast('More info', 'About 95% of the universe is dark matter and dark energy. We are working on the docs.')], ['OK', null, true]]);
+}
+const clock = $('#clock');
+let marsMode = false;
+function marsTime() {
+  const jdtt = Date.now() / 86400000 + 2440587.5 + 69.184 / 86400;
+  const msd = (jdtt - 2405522.0028779) / 1.0274912517;
+  const hrs = ((msd % 1) + 1) % 1 * 24;
+  const hh = Math.floor(hrs), mm = Math.floor((hrs - hh) * 60);
+  return `Mars ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')} MTC`;
+}
+function tick() {
+  clock.textContent = marsMode ? marsTime()
+    : new Date().toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+}
+clock.addEventListener('click', () => {
+  marsMode = !marsMode; tick();
+  if (marsMode && award('mars')) toast('Martian time', 'A day on Mars (a sol) is about 24 hours 40 minutes.');
+});
+tick(); setInterval(tick, 1000);
+
+/* =========================================================
+   windows: traffic lights
+   ========================================================= */
+$$('.win').forEach(win => {
+  const r = $('.l.r', win), y = $('.l.y', win), g = $('.l.g', win);
+  if (!r || r.tagName !== 'BUTTON') return;
+  r.addEventListener('click', () => {
+    win.classList.remove('back'); win.classList.add('sucked');
+    award('spaghetti');
+    setTimeout(() => {
+      win.classList.remove('sucked'); void win.offsetWidth; win.classList.add('back');
+      toast('Window recovered', 'Hawking radiation spat it back out.');
+    }, 2300);
+  });
+  y.addEventListener('click', () => win.classList.toggle('min'));
+  g.addEventListener('click', () => win.classList.toggle('max'));
+  $('.titlebar', win).addEventListener('dblclick', () => win.classList.remove('min'));
+});
+
+/* =========================================================
+   open review mini board
+   ========================================================= */
+(() => {
+  const svg = $('#board');
+  let s = '<rect x="0" y="0" width="14" height="192" rx="3" fill="#1e0b3d"/><rect x="0" y="70" width="14" height="122" rx="3" fill="#ede9fe"/>';
+  const pieces = { '0,0': '♜', '0,4': '♚', '0,7': '♜', '1,0': '♟', '1,1': '♟', '1,5': '♟', '1,6': '♟', '2,2': '♞', '3,3': '♟', '4,4': '♙', '5,5': '♘', '6,0': '♙', '6,1': '♙', '6,5': '♙', '6,6': '♙', '7,0': '♖', '7,4': '♔', '7,7': '♖', '2,6': '♝', '4,2': '♗', '0,3': '♛', '5,3': '♕' };
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+    const x = 26 + c * 24, y = r * 24;
+    s += `<rect x="${x}" y="${y}" width="24" height="24" fill="${(r + c) % 2 ? '#6d28d9' : '#ddd6fe'}"/>`;
+    const pc = pieces[r + ',' + c];
+    if (pc) s += `<text x="${x + 12}" y="${y + 19}" font-size="19" text-anchor="middle" fill="${'♔♕♖♗♘♙'.includes(pc) ? '#fff' : '#12051f'}" stroke="${'♔♕♖♗♘♙'.includes(pc) ? '#12051f' : 'none'}" stroke-width=".6">${pc}</text>`;
+  }
+  s += '<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L10 5L0 10z" fill="#22d3ee"/></marker></defs>';
+  s += '<path d="M146 132L110 60" stroke="#22d3ee" stroke-width="5" stroke-linecap="round" opacity=".85" marker-end="url(#ah)"/>';
+  s += '<circle cx="128" cy="62" r="9" fill="#06b6d4" stroke="#fff" stroke-width="1.5"/><text x="128" y="66" font-size="10" font-weight="800" text-anchor="middle" fill="#fff" font-family="Inter,sans-serif">!!</text>';
+  svg.innerHTML = s;
+})();
+
+/* =========================================================
+   tech stack + terminal
+   ========================================================= */
+const STACK = [
+  ['Rust', 'Rs', '#f97316', '#7c2d12', 'compiled. the borrow checker has approved your flight plan.'],
+  ['Java', 'Ja', '#f43f5e', '#7e22ce', 'JVM warmed up. Minecraft mods loading, no creepers detected.'],
+  ['Go', 'Go', '#22d3ee', '#4338ca', 'go version: Golang. 10,000 goroutines launched into low orbit.'],
+  ['TypeScript', 'TS', '#60a5fa', '#5b21b6', 'types check out. no undefined objects in this solar system.'],
+  ['JavaScript', 'JS', '#facc15', '#a21caf', 'running in your browser right now. that black hole? JavaScript.'],
+  ['Python', 'Py', '#38bdf8', '#ca8a04', 'import antigravity'],
+];
+$('#apps').innerHTML = STACK.map(([n, ab, a, b], i) =>
+  `<button class="app" data-i="${i}"><span class="ico" style="background:linear-gradient(145deg,${a},${b})">${ab}</span>${n}</button>`).join('');
+const tout = $('#tout'), tin = $('#tin');
+function out(text, cls) { const d = document.createElement('div'); if (cls) d.className = cls; d.textContent = text; tout.append(d); tout.scrollTop = tout.scrollHeight; }
+$$('.app').forEach(b => b.addEventListener('click', () => {
+  const [n, , , , msg] = STACK[b.dataset.i];
+  b.classList.remove('bounce'); void b.offsetWidth; b.classList.add('bounce');
+  out('% launch ' + n.toLowerCase(), 'c'); out(msg);
+}));
+const CMDS = {
+  help: () => 'commands: whoami  ls  stack  projects  contact  github  date  ping <planet>  launch  warp  hawking  clear  exit',
+  whoami: () => 'mistydrink: web developer, minecraft modder, fintech developer. currently orbiting a black hole.',
+  ls: () => 'projects/  experience/  stack/  contact.txt  .secrets/',
+  'ls .secrets': () => 'ls: .secrets: permission denied (it is past the event horizon)',
+  stack: () => STACK.map(s => s[0]).join(' · '),
+  projects: () => 'open-review  →  https://mistydrink.github.io/open-review/',
+  contact: () => 'potatoe20023@gmail.com',
+  'cat contact.txt': () => 'potatoe20023@gmail.com',
+  github: () => 'https://github.com/mistydrink',
+  date: () => new Date().toString() + '\n' + marsTime(),
+  exit: () => 'there is no exit. you are inside a black hole.',
+  clear: () => { tout.textContent = ''; return null; },
+  warp: () => { warp(); return 'engaging warp drive…'; },
+  hawking: () => { doHawking(); return 'emitting Hawking radiation…'; },
+  42: () => { award('answer'); return 'the answer to life, the universe and everything.'; },
+  launch: () => {
+    [3, 2, 1].forEach((n, i) => setTimeout(() => out(`T-${n}`), 500 * (i + 1)));
+    setTimeout(() => { out('liftoff. we have liftoff.'); warp(); }, 2000);
+    return 'ignition sequence start…';
+  },
+};
+const PINGS = { moon: 'about 1.3 seconds each way', mars: 'between about 3 and 22 minutes each way, depending on where both planets are', sun: 'about 8 minutes 20 seconds', pluto: 'about 5.5 hours each way. pluto says hi.' };
+function run(raw) {
+  const cmd = raw.trim().toLowerCase();
+  if (!cmd) return;
+  out('% ' + raw, 'c');
+  if (cmd.startsWith('sudo')) { award('sudo'); out('mistydrink is not in the sudoers file. This incident will be reported to Houston.'); return; }
+  if (cmd.startsWith('ping')) {
+    const target = cmd.split(/\s+/)[1] || '';
+    if (PINGS[target]) { award('ping'); out(`PING ${target}: light travel time ${PINGS[target]}.`); }
+    else out('usage: ping moon | mars | sun | pluto');
+    return;
+  }
+  const f = CMDS[cmd];
+  const res = f ? f() : `zsh: command not found: ${cmd.split(' ')[0]}. try "help"`;
+  if (res) out(res);
+}
+tin.addEventListener('keydown', e => { if (e.key === 'Enter') { run(tin.value); tin.value = ''; } e.stopPropagation(); });
+out('Last login: just now on ttys042 (event horizon)');
+out('type "help" to see what this terminal can do.');
+
+/* =========================================================
+   contact
+   ========================================================= */
+const EMAIL = 'potatoe20023@gmail.com';
+$('#send').addEventListener('click', () => {
+  const sub = $('#m-sub').value.trim() || 'Hello from Earth';
+  const body = $('#m-body').value;
+  location.href = `mailto:${EMAIL}?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(body)}`;
+  toast('Opening your mail app', `Your message is addressed to ${EMAIL}.`);
+});
+$('#copy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(EMAIL); toast('Copied', EMAIL + ' is on your clipboard.'); }
+  catch (e) { toast('Copy blocked', 'Your browser blocked it. The address is ' + EMAIL); }
+});
+
+/* =========================================================
+   dock
+   ========================================================= */
+const ico = (a, b, inner) => `<svg viewBox="0 0 50 50"><defs><linearGradient id="d${a.slice(1)}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="50" height="50" rx="12" fill="url(#d${a.slice(1)})"/>${inner}</svg>`;
+const DOCK = [
+  ['#welcome', 'Home', ico('#c084fc', '#4c1d95', '<circle cx="25" cy="25" r="9" fill="#fff"/><ellipse cx="25" cy="25" rx="17" ry="5.5" fill="none" stroke="#fff" stroke-width="2.4" transform="rotate(-22 25 25)"/>')],
+  ['#projects', 'Projects', ico('#a5b4fc', '#6d28d9', '<path d="M11 17a3 3 0 0 1 3-3h7l3 3h12a3 3 0 0 1 3 3v13a3 3 0 0 1-3 3H14a3 3 0 0 1-3-3z" fill="#fff"/>')],
+  ['#experience', 'Experience', ico('#f0abfc', '#9333ea', '<rect x="11" y="18" width="28" height="18" rx="3" fill="#fff"/><path d="M20 18v-3a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3" fill="none" stroke="#fff" stroke-width="2.6"/>')],
+  ['#stack', 'Terminal', ico('#3b0764', '#0b0420', '<path d="M14 18l7 6-7 6" fill="none" stroke="#e9d5ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 32h11" stroke="#e9d5ff" stroke-width="3" stroke-linecap="round"/>')],
+  ['#contact', 'Mail', ico('#93c5fd', '#7c3aed', '<rect x="11" y="15" width="28" height="20" rx="3" fill="#fff"/><path d="M12 17l13 10 13-10" fill="none" stroke="#7c3aed" stroke-width="2.4"/>')],
+  ['https://github.com/mistydrink', 'GitHub', ico('#334155', '#0f0a1e', '<path transform="translate(13 13) scale(1.5)" fill="#fff" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>')],
+];
+const dock = $('#dock');
+dock.innerHTML = DOCK.map(([href, label, svg]) =>
+  `<a href="${href}"${href.startsWith('http') ? ' target="_blank" rel="noopener"' : ''} aria-label="${label}">${svg}<span class="tip">${label}</span></a>`).join('')
+  + `<span class="sep"></span><button id="trash" aria-label="Black Hole (Trash)"><svg viewBox="0 0 50 50"><defs><radialGradient id="tr"><stop offset=".4" stop-color="#000"/><stop offset=".47" stop-color="#f5d0fe"/><stop offset=".58" stop-color="#8b5cf6"/><stop offset=".85" stop-color="#2e1065"/><stop offset="1" stop-color="#2e1065" stop-opacity="0"/></radialGradient></defs><circle cx="25" cy="25" r="24" fill="url(#tr)"/></svg><span class="tip">Black Hole (Trash)</span></button>`;
+const dockItems = $$('a,button', dock);
+if (!reduce) {
+  dock.addEventListener('mousemove', e => dockItems.forEach(it => {
+    const r = it.getBoundingClientRect(), d = Math.abs(e.clientX - (r.left + r.width / 2));
+    it.style.setProperty('--s', (1 + Math.max(0, 1 - d / 130) * .5).toFixed(3));
+  }));
+  dock.addEventListener('mouseleave', () => dockItems.forEach(it => it.style.setProperty('--s', 1)));
+}
+$('#trash').addEventListener('click', () => dialog(
+  `<h3>Empty the Black Hole?</h3><p style="color:var(--dim);font-size:14px;margin:6px 0 0">Are you sure you want to permanently erase the items in the Black Hole? Information can't be destroyed, so this may take a while.</p>`,
+  [['Cancel'], ['Empty', () => {
+    const tr = $('#trash').getBoundingClientRect();
+    dockItems.slice(0, -1).forEach(it => { const r = it.getBoundingClientRect(); it.style.setProperty('--dx', (tr.left - r.left) + 'px'); it.classList.add('suck'); });
+    setTimeout(() => { dockItems.forEach(it => it.classList.remove('suck')); toast('Black Hole emptied', 'Everything came back as Hawking radiation. Physics!'); }, 1500);
+    award('trash');
+  }, true]]));
+
+/* =========================================================
+   effects: warp, hawking, comets, idle astronaut
+   ========================================================= */
+const fx = $('#fx');
+function warp() {
+  award('konami');
+  if (BH) BH.st.boost = 1;
+  const x = fx.getContext('2d'), w = fx.width = innerWidth, h = fx.height = innerHeight;
+  const stars = Array.from({ length: 260 }, () => ({ a: Math.random() * Math.PI * 2, r: Math.random() * 40, v: 200 + Math.random() * 900 }));
+  const t0 = performance.now(), dur = reduce ? 900 : 2200;
+  (function step(now) {
+    const k = (now - t0) / dur;
+    x.clearRect(0, 0, w, h);
+    if (k >= 1) return;
+    const fade = Math.sin(k * Math.PI);
+    x.lineCap = 'round';
+    for (const s of stars) {
+      const r0 = s.r + s.v * k * k * 2.2, r1 = r0 + 20 + s.v * k * .5;
+      x.strokeStyle = `rgba(233,213,255,${(fade * .9).toFixed(2)})`; x.lineWidth = 1.5;
+      x.beginPath(); x.moveTo(w / 2 + Math.cos(s.a) * r0, h / 2 + Math.sin(s.a) * r0); x.lineTo(w / 2 + Math.cos(s.a) * r1, h / 2 + Math.sin(s.a) * r1); x.stroke();
+    }
+    requestAnimationFrame(step);
+  })(t0);
+  toast('Warp drive engaged', 'Ludicrous speed achieved. Please keep your arms inside the browser.');
+}
+function doHawking() {
+  award('hawking');
+  if (BH && introVisible) BH.hawking();
+  document.body.classList.add('glow'); setTimeout(() => document.body.classList.remove('glow'), 1800);
+  toast('Hawking radiation detected', 'Black holes slowly evaporate. This one just lost a little weight.');
+}
+function comet() {
+  if (document.hidden || introVisible) return;
+  const c = document.createElement('div'); c.className = 'comet';
+  c.style.left = (55 + Math.random() * 45) + 'vw'; c.style.top = (6 + Math.random() * 40) + 'vh';
+  c.title = 'catch it!';
+  c.addEventListener('click', () => { c.remove(); award('comet') ? null : toast('Comet caught', 'Make a wish.'); });
+  document.body.append(c);
+  setTimeout(() => c.remove(), 1700);
+}
+if (!reduce) (function loop() { setTimeout(() => { comet(); loop(); }, 7000 + Math.random() * 8000); })();
+let idleT;
+function resetIdle() {
+  clearTimeout(idleT);
+  idleT = setTimeout(() => {
+    if (document.hidden || $('.astro')) return;
+    const a = document.createElement('div'); a.className = 'astro'; a.title = 'Houston?';
+    a.innerHTML = '<svg viewBox="0 0 100 120"><rect x="28" y="54" width="44" height="46" rx="14" fill="#ede9fe"/><rect x="18" y="58" width="14" height="34" rx="7" fill="#ddd6fe"/><rect x="68" y="58" width="14" height="34" rx="7" fill="#ddd6fe"/><rect x="34" y="96" width="13" height="20" rx="6" fill="#ddd6fe"/><rect x="53" y="96" width="13" height="20" rx="6" fill="#ddd6fe"/><circle cx="50" cy="36" r="26" fill="#f5f3ff"/><rect x="32" y="24" width="36" height="24" rx="12" fill="#2e1065"/><rect x="38" y="28" width="12" height="6" rx="3" fill="#c4b5fd" opacity=".8"/><rect x="40" y="66" width="20" height="12" rx="3" fill="#a78bfa"/></svg>';
+    a.addEventListener('click', () => { a.remove(); award('idle'); toast('Astronaut rescued', 'Houston, we found someone.'); });
+    document.body.append(a); setTimeout(() => a.remove(), 16500);
+  }, 45000);
+}
+['mousemove', 'keydown', 'scroll', 'touchstart'].forEach(ev => addEventListener(ev, resetIdle, { passive: true }));
+resetIdle();
+
+/* =========================================================
+   keyboard: konami, typed words, ?
+   ========================================================= */
+const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+let kpos = 0, typed = '';
+addEventListener('keydown', e => {
+  if (e.target.closest && e.target.closest('input,textarea')) return;
+  const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  kpos = k === KONAMI[kpos] ? kpos + 1 : (k === KONAMI[0] ? 1 : 0);
+  if (kpos === KONAMI.length) { kpos = 0; warp(); }
+  if (e.key === '?') { showEggs(); return; }
+  if (e.key.length === 1) {
+    typed = (typed + e.key.toLowerCase()).slice(-12);
+    if (typed.endsWith('hawking')) doHawking();
+    if (typed.endsWith('42') && award('answer')) toast('42', 'The answer to life, the universe and everything.');
+  }
+  if (e.key === 'Escape') umenu.classList.remove('open');
+});
+
+console.log('%c   *    .  ✦   .\n  .   ●   mistydrink  .\n    ✦   .     *\n%cHouston, we have a developer. Try pressing ? on the page.', 'color:#c4b5fd;font:14px monospace', 'color:#f0abfc;font:13px sans-serif');
+}
+</script>
+</body>
+</html>
